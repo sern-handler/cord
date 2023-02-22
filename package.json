@@ -1,0 +1,21 @@
+{
+  "name": "cord",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "tdd" : "--config ./vitest.config.ts",
+    "test": "vitest run"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "fp-ts": "^2.13.1",
+    "rxjs": "^7.8.0"
+  },
+  "type": "module",
+  "devDependencies": {
+    "vitest": "^0.28.5"
+  }
+}
