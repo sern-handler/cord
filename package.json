@@ -2,9 +2,11 @@
   "name": "cord",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "tdd" : "--config ./vitest.config.ts",
+    "tdd": "vitest --config ./vitest.config.ts",
+    "dev": "tsup --watch --onSuccess node .",
+    "build": "tsup",
     "test": "vitest run"
   },
   "keywords": [],
@@ -16,6 +18,7 @@
   },
   "type": "module",
   "devDependencies": {
+    "tsup": "^6.6.3",
     "vitest": "^0.28.5"
   }
 }
