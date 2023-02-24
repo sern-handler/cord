@@ -53,3 +53,5 @@ export function inject_path<T extends Path>(
       .join('&')
   );
 }
+
+export const link = (f: (v: string) => string ) => (v: unknown): string => f(String(v));

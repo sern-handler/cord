@@ -108,12 +108,6 @@ interface Options {
 **/
 
 
-const link = (f: (v: string) => string ) => (v: string): string => f(v);
-
-export const discordLink = link(version => `https://discord.com/api/v${version}`);
-
-export const wssGatewayLink = link(version => `wss://gateway.discord.gg/?v=${version}&encoding=json`);
-
 export const Client = (o : Options): never => {
   void o;
   throw 'unimplemented!';
