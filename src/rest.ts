@@ -1,7 +1,11 @@
 import type { TokenType } from './structures/common';
+import * as TE from 'fp-ts/TaskEither';
+import * as J from 'fp-ts/Json';
+import * as E from 'fp-ts/Either'
 import type { Endpoint, HttpVerb, Inject, Path } from './tools';
 import { inject_path } from './tools';
-
+import { pipe } from 'fp-ts/lib/function';
+import { baseApiUrl } from './constants.js'
 export interface RestOptions {
   token_type: TokenType;
   token: string;
@@ -21,28 +25,32 @@ export interface RequestOptions {
 }
 
 export class Rest {
-  private get host_url(): string {
-    return 'https://discord.com/api/v' + (this.options.version || 10);
-  }
-
   constructor(private options: RestOptions) {}
 
-  public async request<T extends Path>(
+  public request<T extends Path>(
     endpoint: Endpoint<T>,
     inject: Inject<T>,
     options: RequestOptions = {}
-  ): Promise<Response> {
-    if (typeof options.body === 'object') {
-      options.body = JSON.stringify(options.body);
+  ): TE.TaskEither<Error,Response> {
+    const safeJson = (o: unknown) => {
+        if(typeof o === 'object') {
+          return J.stringify(o)
+        }
+        return E.right(o)
     }
-
+    const body = pipe(
+        options.body,
+        safeJson
+    );
+    if(E.isLeft(body)) {
+        throw new Error("Invalid body provided : "+body)
+    }
     const [method, e] = endpoint.split(' ') as [HttpVerb, T];
-
-    options.method = method;
-
-    return fetch(
-      this.host_url + inject_path(e, inject),
-      options as RequestInit
+    
+    const processedOptions = { ...options, method, body: body.right } as RequestInit;
+    return TE.tryCatch(
+        () => fetch(baseApiUrl(10) + inject_path(e, inject), processedOptions), 
+        (error) => new Error(String(error))      
     );
   }
 }
