@@ -88,7 +88,7 @@ export class Rest {
   }
 
   public get<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `GET ${T}`,
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response> {
@@ -100,7 +100,7 @@ export class Rest {
   }
 
   public post<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `POST ${T}`,
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response>  {
@@ -112,7 +112,7 @@ export class Rest {
   }
 
   public put<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `PUT ${T}`,
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response> {
@@ -124,7 +124,7 @@ export class Rest {
   }
 
   public delete<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `DELETE ${T}`, 
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response>  {
@@ -136,7 +136,7 @@ export class Rest {
   }
 
   public patch<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `PATCH ${T}`,
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response> {
@@ -148,7 +148,7 @@ export class Rest {
   }
 
   public head<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `HEAD ${T}`,
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response> {
@@ -160,7 +160,7 @@ export class Rest {
   }
 
   public option<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: Endpoint<T>, //no endpoint?
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response> {
@@ -172,7 +172,7 @@ export class Rest {
   }
 
   public connect<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `CONNECT ${T}`,
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response> {
@@ -184,7 +184,7 @@ export class Rest {
   }
 
   public trace<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `TRACE ${T}`,
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response> {
@@ -196,7 +196,7 @@ export class Rest {
   }
 
   public copy<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `COPY ${T}`,
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response> {
@@ -208,7 +208,7 @@ export class Rest {
   }
 
   public link<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `LINK ${T}`,
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response> {
@@ -220,7 +220,7 @@ export class Rest {
   }
 
   public unlink<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `UNLINK ${T}`,
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response> {
@@ -232,7 +232,7 @@ export class Rest {
   }
 
   public purge<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `PURGE ${T}`,
     inject: Inject<T> = {},
     options: RequestOptions = {}
  ): TE.TaskEither<Error,Response> {
@@ -244,7 +244,7 @@ export class Rest {
   }
 
   public lock<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `LOCK ${T}`,
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response> {
@@ -256,7 +256,7 @@ export class Rest {
   }
 
   public unlock<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `UNLOCK ${T}`,
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response> {
@@ -268,7 +268,7 @@ export class Rest {
   }
 
   public propfind<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `PROPFIND ${T}`,
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response> {
@@ -280,7 +280,7 @@ export class Rest {
   }
 
   public view<T extends Path>(
-    endpoint: Endpoint<T>,
+    endpoint: `VIEW ${T}`,
     inject: Inject<T> = {},
     options: RequestOptions = {}
   ): TE.TaskEither<Error,Response> {
