@@ -21,20 +21,20 @@ export enum HttpVerb {
 export type UrlParam<T> = T extends `{${string}}` ? T : never;
 export type UrlParams<T extends string> =
   T extends `${infer L}{${infer U}}${infer R}`
-    ? [UrlParam<`{${U}}`>, ...UrlParams<L>, ...UrlParams<R>]
-    : T extends `{${infer U}}${infer R}`
-    ? [UrlParam<`{${U}}`>, ...UrlParams<R>]
-    : [];
+  ? [UrlParam<`{${U}}`>, ...UrlParams<L>, ...UrlParams<R>]
+  : T extends `{${infer U}}${infer R}`
+  ? [UrlParam<`{${U}}`>, ...UrlParams<R>]
+  : [];
 type RemoveMethod<T> = T extends `${HttpVerb} /${infer U}` ? `/${U}` : T;
 export type Inject<T extends Endpoint<Path> | Path> = Partial<
   Record<string, unknown>
 > & {
-  [K in UrlParams<RemoveMethod<T>>[number]]: unknown;
-};
+    [K in UrlParams<RemoveMethod<T>>[number]]: unknown;
+  };
 export type Path = `/${string}`;
 export type Endpoint<T extends Path> = `${HttpVerb} ${T}`;
 
-export function inject_path<T extends Path>(
+export function injectPath<T extends Path>(
   host: T,
   inject: Inject<T>
 ): string {
@@ -54,4 +54,4 @@ export function inject_path<T extends Path>(
   );
 }
 
-export const link = (f: (v: string) => string ) => (v: unknown): string => f(String(v));
+export const link = (f: (v: string) => string) => (v: unknown): string => f(String(v));

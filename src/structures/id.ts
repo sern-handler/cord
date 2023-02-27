@@ -1,9 +1,14 @@
 import type { u16, u64 } from '@rqft/rust';
 import { i64, u8 } from '@rqft/rust';
-import type { Snowflake } from './common';
+import type { Snowflake } from '../common';
 
+/**
+ * The ID class, represents a discord snowflake
+ * 
+ * @since 1.0.0
+ */
 export class Id {
-  constructor(private value: Snowflake) {}
+  constructor(private value: Snowflake) { }
 
   public asI64(): i64 {
     return i64(BigInt(this.value));

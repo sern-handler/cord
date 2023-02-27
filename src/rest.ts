@@ -1,6 +1,6 @@
-import type { TokenType } from './structures/common';
+import type { TokenType } from './common';
 import type { Endpoint, HttpVerb, Inject, Path } from './tools';
-import { inject_path } from './tools';
+import { injectPath } from './tools';
 
 export interface RestOptions {
   token_type: TokenType;
@@ -25,7 +25,7 @@ export class Rest {
     return 'https://discord.com/api/v' + (this.options.version || 10);
   }
 
-  constructor(private options: RestOptions) {}
+  constructor(private options: RestOptions) { }
 
   public async request<T extends Path>(
     endpoint: Endpoint<T>,
@@ -41,7 +41,7 @@ export class Rest {
     options.method = method;
 
     return fetch(
-      this.host_url + inject_path(e, inject),
+      this.host_url + injectPath(e, inject),
       options as RequestInit
     );
   }
