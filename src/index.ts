@@ -1,3 +1,17 @@
+import { Reader, chain, ask } from 'fp-ts/Reader'
+import { Rest, RestOptions } from './rest.js';
+
+
+interface Dependencies {
+    rest: (restOps: RestOptions) => Rest;
+}
+
+const instance = () => ({
+    rest: (restOps: RestOptions) => new Rest(restOps)
+})
+
+    
+
 
 /**
  * The type of interaction this request is.
@@ -76,8 +90,19 @@ enum InteractionResponseType {
 }
 
 interface Options {
-  token : string
+  token : string;
+  gateway : {
+    shards: number;
+    session_start_limit : {
+        total: number;
+        remaining: number;
+        reset_after: number;
+        max_concurrency: number;
+    }
+  }
 }
+
+
 /**
  {
   "op": 2,
