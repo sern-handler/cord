@@ -1,6 +1,7 @@
 import { TokenType } from "./structures/common.js";
 import * as O from 'fp-ts/Option';
 import { pipe } from "fp-ts/lib/function";
+import { WS_URL } from "./constants.js";
 
 export enum HttpVerb {
   Get = 'GET',
@@ -59,4 +60,5 @@ export function injectPath<T extends Path>(
 }
 
 export const link = (f: (v: string) => string ) => (v: unknown): string => f(String(v));
-
+export const gatewayUrl = link(version => `${WS_URL}/?v=${version}&encoding=json`);
+export const baseApiUrl = link(version => `https://discord.com/api/v${version}`);
