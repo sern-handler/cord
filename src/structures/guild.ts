@@ -1,4 +1,4 @@
-import type { Snowflake } from './common';
+import type { Snowflake } from './common.js';
 export interface RawIntegration {
   id: Snowflake;
 }

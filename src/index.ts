@@ -1,6 +1,3 @@
-import { Either, left, right } from 'fp-ts/Either';
-import { Lazy, pipe } from 'fp-ts/function';
-import * as RE from 'fp-ts/ReaderEither';
 import { Rest } from './rest.js';
 import { gatewayUrl } from './tools.js';
 
@@ -87,15 +84,6 @@ enum InteractionResponseType {
 
 interface Options {
   token : string;
-  gateway : {
-    shards: number;
-    session_start_limit : {
-        total: number;
-        remaining: number;
-        reset_after: number;
-        max_concurrency: number;
-    }
-  };
 }
 
 
@@ -146,4 +134,6 @@ export const makeClient = (o : Options) => {
 };
 
 
-
+makeClient({
+    token : "MTA2MTQyMTgzNDM0MTQ2MjAzNg.G4cQq0.XplgmUMsJD6Z7XgJSh93bDtuf40L1Ppq9H9_3k"
+}).login()

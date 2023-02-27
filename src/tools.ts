@@ -1,6 +1,3 @@
-import { TokenType } from "./structures/common.js";
-import * as O from 'fp-ts/Option';
-import { pipe } from "fp-ts/lib/function";
 import { WS_URL } from "./constants.js";
 
 export enum HttpVerb {

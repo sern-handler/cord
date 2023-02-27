@@ -1,9 +1,9 @@
 import type { Option } from '@rqft/rust';
 import { None, Some, unimplemented } from '@rqft/rust';
-import type { RawApplicationRoleConnectionMetadata } from './application';
-import type { Item } from './common';
-import type { RawIntegration } from './guild';
-import { Id } from './id';
+import type { RawApplicationRoleConnectionMetadata } from './application.js';
+import type { Item } from './common.js';
+import type { RawIntegration } from './guild.js';
+import { Id } from './id.js';
 // import { inject_path } from '../tools';
 
 export interface RawUser extends Item {
