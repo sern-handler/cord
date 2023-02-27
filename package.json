@@ -7,10 +7,11 @@
     "tdd": "vitest --config ./vitest.config.ts",
     "dev": "tsup --watch --onSuccess node .",
     "build": "tsup",
-    "test": "vitest run"
+    "test": "vitest run",
+    "pretty": "prettier --write"
   },
   "keywords": [],
-  "author": "",
+  "author": "sern Developers",
   "license": "MIT",
   "dependencies": {
     "@rqft/rust": "^1.0.18",
