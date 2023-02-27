@@ -1,3 +1,7 @@
+import { TokenType } from "./structures/common.js";
+import * as O from 'fp-ts/Option';
+import { pipe } from "fp-ts/lib/function";
+
 export enum HttpVerb {
   Get = 'GET',
   Post = 'POST',
@@ -34,7 +38,7 @@ export type Inject<T extends Endpoint<Path> | Path> = Partial<
 export type Path = `/${string}`;
 export type Endpoint<T extends Path> = `${HttpVerb} ${T}`;
 
-export function inject_path<T extends Path>(
+export function injectPath<T extends Path>(
   host: T,
   inject: Inject<T>
 ): string {
@@ -55,3 +59,4 @@ export function inject_path<T extends Path>(
 }
 
 export const link = (f: (v: string) => string ) => (v: unknown): string => f(String(v));
+
