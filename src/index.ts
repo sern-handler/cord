@@ -1,16 +1,12 @@
-import { Reader, chain, ask } from 'fp-ts/Reader'
-import { Rest, RestOptions } from './rest.js';
-
+import { Either, left, right } from 'fp-ts/Either';
+import { Lazy, pipe } from 'fp-ts/function';
+import * as RE from 'fp-ts/ReaderEither';
+import { Rest } from './rest.js';
+import { gatewayUrl } from './tools.js';
 
 interface Dependencies {
-    rest: (restOps: RestOptions) => Rest;
+    rest: Rest;
 }
-
-const instance = () => ({
-    rest: (restOps: RestOptions) => new Rest(restOps)
-})
-
-    
 
 
 /**
@@ -99,7 +95,7 @@ interface Options {
         reset_after: number;
         max_concurrency: number;
     }
-  }
+  };
 }
 
 
@@ -133,9 +129,20 @@ interface Options {
 **/
 
 
-export const Client = (o : Options): never => {
-  void o;
-  throw 'unimplemented!';
+export const makeClient = (o : Options) => {
+  const rest = new Rest({
+    token: o.token
+  });
+  const websocketLink = gatewayUrl(10)
+  return {
+    event: (name: string) => { throw 'unimplemented!' },
+    login : async () => {
+        //for now until we implement login to websocket
+        
+        const task = rest.request("GET /gateway/bot");
+        console.log(await task())
+    }
+  };
 };
 
 

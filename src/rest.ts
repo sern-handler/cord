@@ -6,7 +6,7 @@ import * as J from 'fp-ts/Json'
 import * as E from 'fp-ts/Either'
 import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/function';
-import { baseApiUrl } from './constants';
+import { baseApiUrl } from './tools.js';
 export interface RestOptions {
   tokenType?: TokenType;
   token: string;
