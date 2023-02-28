@@ -17,15 +17,15 @@ export interface RawUser extends Item {
   avatar?: string;
   bot?: boolean;
   system?: boolean;
-  mfaEnabled?: boolean;
+  mfa_enabled?: boolean;
   banner?: string;
-  accentColor?: number;
+  accent_color?: number;
   locale?: string;
   verified?: boolean;
   email?: string;
   flags?: number;
-  nitroType?: NitroType;
-  publicFlags?: number;
+  nitro_type?: NitroType;
+  public_flags?: number;
 }
 
 export class User {
