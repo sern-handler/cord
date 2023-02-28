@@ -5,7 +5,16 @@ interface Dependencies {
     rest: Rest;
 }
 
-
+interface GetGatewayBot {
+    url: string;
+    shards: number;
+    session_start_limit: {
+       total: number;
+       remaining: number;
+       reset_after: number;
+       max_concurrency: number
+    }
+}
 /**
  * The type of interaction this request is.
  * __@PURE__
@@ -121,13 +130,22 @@ export const makeClient = (o : Options) => {
   const rest = new Rest({
     token: o.token
   });
-  const websocketLink = gatewayUrl(10)
+ 
   return {
     event: (name: string) => { throw 'unimplemented!' },
-    login : async () => {
+    login : () => {
         //for now until we implement login to websocket
+  //{
+  //     url: 'wss://gateway.discord.gg',
+  //     shards: 1,
+  //     session_start_limit: {
+  //        total: 1000,
+  //        remaining: 1000,
+  //        reset_after: 0,
+  //        max_concurrency: 1
+  //    }
+  // }
         const task = rest.request("GET /gateway/bot");
-        console.log(await task())
     }
   };
 };
