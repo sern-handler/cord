@@ -1,6 +1,6 @@
 import type { u16, u64 } from '@rqft/rust';
 import { i64, u8 } from '@rqft/rust';
-import type { Snowflake } from './common';
+import type { Snowflake } from './common.js';
 
 export class Id {
   constructor(private value: Snowflake) {}

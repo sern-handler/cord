@@ -126,7 +126,6 @@ export const makeClient = (o : Options) => {
     event: (name: string) => { throw 'unimplemented!' },
     login : async () => {
         //for now until we implement login to websocket
-        
         const task = rest.request("GET /gateway/bot");
         console.log(await task())
     }
@@ -134,6 +133,3 @@ export const makeClient = (o : Options) => {
 };
 
 
-makeClient({
-    token : "MTA2MTQyMTgzNDM0MTQ2MjAzNg.G4cQq0.XplgmUMsJD6Z7XgJSh93bDtuf40L1Ppq9H9_3k"
-}).login()

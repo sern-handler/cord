@@ -1,11 +1,10 @@
 import { TokenType } from './structures/common.js';
 import { Endpoint, Inject, Path } from './tools.js';
 import { HttpVerb, injectPath } from './tools.js';
-import * as TE from 'fp-ts/es6/TaskEither.js'
-import * as J from 'fp-ts/es6/Json.js'
-import * as E from 'fp-ts/es6/Either.js'
-import * as O from 'fp-ts/es6/Option.js'
-import { pipe } from 'fp-ts/es6/function.js';
+import * as TE from 'fp-ts/TaskEither'
+import * as J from 'fp-ts/Json'
+import * as E from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function';
 import { baseApiUrl } from './tools.js';
 export interface RestOptions {
   tokenType?: TokenType;
@@ -56,15 +55,14 @@ export class Rest {
     }
 
     const [method, e] = endpoint.split(' ') as [HttpVerb, T];
-    const makeHeaders = (maybeHeaders: Record<string,string> | undefined) => pipe(maybeHeaders,
-            O.fromNullable,
-            O.map(header => ({
+    const makeHeaders = (maybeHeaders: Record<string,string> | undefined) => pipe(
+            maybeHeaders ?? {},
+            header => ({
                 ...header,
                 authorization : (this.options.tokenType === TokenType.Bot ? 'Bot ' : '') + this.options.token,
                 'content-Type': 'application/json',
                 'user-agent': 'DiscordBot (https://github.com/sern-handler/cord, 0.0.1)',
-            })),
-            O.getOrElse(() => ({}) as Record<string,string>)
+            })           
         );
 
     const processedOptions = {

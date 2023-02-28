@@ -8,7 +8,7 @@ const shared = {
 export default defineConfig([
     {
         format: 'esm',
-        target: 'node18',
+        target: 'node16',
         tsconfig: './tsconfig.json',
         dts: true,
         outDir: './dist',
