@@ -1,48 +1,74 @@
-import type { TokenType } from './common';
-import type { Endpoint, HttpVerb, Inject, Path } from './tools';
-import { injectPath } from './tools';
+import { Rest } from './rest.js';
+import { gatewayUrl } from './tools.js';
 
-export interface RestOptions {
-  token_type: TokenType;
-  token: string;
-  version?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+import type {} from '@'
+
+interface Dependencies {
+  rest: Rest;
 }
 
-export interface RequestOptions {
-  body?: unknown;
-  cache?: RequestCache;
-  credentials?: RequestCredentials;
-  headers?: Record<string, string>;
-  integrity?: string;
-  keepalive?: boolean;
-  method?: HttpVerb;
-  signal?: AbortSignal | null;
-  window?: null;
-}
-
-export class Rest {
-  private get host_url(): string {
-    return 'https://discord.com/api/v' + (this.options.version || 10);
+interface GetGatewayBot {
+  url: string;
+  shards: number;
+  session_start_limit: {
+    total: number;
+    remaining: number;
+    reset_after: number;
+    max_concurrency: number
   }
+}
 
-  constructor(private options: RestOptions) { }
 
-  public async request<T extends Path>(
-    endpoint: Endpoint<T>,
-    inject: Inject<T>,
-    options: RequestOptions = {}
-  ): Promise<Response> {
-    if (typeof options.body === 'object') {
-      options.body = JSON.stringify(options.body);
+/**
+ {
+  "op": 2,
+  "d": {
+    "token": "my_token",
+    "properties": {
+      "os": "linux",
+      "browser": "disco",
+      "device": "disco"
+    },
+    "compress": true,
+    "large_threshold": 250,
+    "shard": [0, 1],
+    "presence": {
+      "activities": [{
+        "name": "Cards Against Humanity",
+        "type": 0
+      }],
+      "status": "dnd",
+      "since": 91879201,
+      "afk": false
+    },
+    // This intent represents 1 << 0 for GUILDS, 1 << 1 for GUILD_MEMBERS, and 1 << 2 for GUILD_BANS
+    // This connection will only receive the events defined in those three intents
+    "intents": 7
+  }
+}
+**/
+
+
+export const makeClient = (o: Options) => {
+  const rest = new Rest({
+    token: o.token
+  });
+
+  return {
+    event: (name: string) => { throw 'unimplemented!' },
+    login: () => {
+      //for now until we implement login to websocket
+      //{
+      //     url: 'wss://gateway.discord.gg',
+      //     shards: 1,
+      //     session_start_limit: {
+      //        total: 1000,
+      //        remaining: 1000,
+      //        reset_after: 0,
+      //        max_concurrency: 1
+      //    }
+      // }
+      const task = rest.request("GET /gateway/bot");
     }
-
-    const [method, e] = endpoint.split(' ') as [HttpVerb, T];
-
-    options.method = method;
-
-    return fetch(
-      this.host_url + injectPath(e, inject),
-      options as RequestInit
-    );
-  }
-}
+  };
+};

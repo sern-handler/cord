@@ -5,6 +5,7 @@ const shared = {
     clean: true,
     sourcemap: false,
 };
+
 export default defineConfig([
     {
         format: 'esm',

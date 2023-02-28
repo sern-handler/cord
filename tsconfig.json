@@ -5,8 +5,8 @@
     /* Basic Options */
     // "incremental": true                    /* Enable incremental compilation */,
     "target": "ESNext"                        /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */,
-    "module": "CommonJS"                      /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', 'es2020', or 'ESNext'. */,
-    "lib": ["ESNext"]                            /* Specify library files to be included in the compilation. */,
+    "module": "ESNext"                        /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', 'es2020', or 'ESNext'. */,
+    // "lib": ["ESNext"]                      /* Specify library files to be included in the compilation. */,
     // "checkJs": true                        /* Report errors in .js files. */,
     // "allowJs": true,                       /* Allow javascript files to be compiled. */
     // "jsx": "preserve",                     /* Specify JSX code generation: 'preserve', 'react-native', or 'react'. */
@@ -21,7 +21,7 @@
     "removeComments": true                    /* Do not emit comments to output. */,
     // "noEmit": true,                        /* Do not emit outputs. */
     "newLine": "lf"                           /* Set the newline character for emitting files */,
-    "importHelpers": true                     /* Allow importing helper functions from tslib once per project, instead of including them per-file. */,
+    // "importHelpers": true                  /* Allow importing helper functions from tslib once per project, instead of including them per-file. */,
     "importsNotUsedAsValues": "preserve"      /* Specify emit/checking behavior for imports that are only used for types. */,
     // "downlevelIteration": true,            /* Provide full support for iterables in 'for-of', spread, and destructuring when targeting 'ES5' or 'ES3'. */
     // "isolatedModules": true,               /* Transpile each file as a separate module (similar to 'ts.transpileModule'). */
@@ -38,7 +38,7 @@
 
     /* Additional Checks */
     "noUnusedParameters": true                /* Report errors on unused parameters. */,
-    // "noUnusedLocals": true                    /* Report errors on unused locals. */,
+    // "noUnusedLocals": true                 /* Report errors on unused locals. */,
     // "noImplicitReturns": true,             /* Report error when not all code paths in function return a value. */
     // "noFallthroughCasesInSwitch": true,    /* Report errors for fallthrough cases in switch statement. */
     
@@ -47,6 +47,7 @@
     "baseUrl": "."                            /* Base directory to resolve non-absolute module names. */,
     "paths": {
       "@structures/*": ["src/structures/*"],
+      "@types/*": ["src/types/*"]
     }                                         /* A series of entries which re-map imports to lookup locations relative to the 'baseUrl'. */,
     // "rootDirs": [],                        /* List of root folders whose combined content represents the structure of the project at runtime. */
     // "typeRoots": [],                       /* List of folders to include type definitions from. */
