@@ -14,6 +14,7 @@
 - [ ] Fault tolerant and easy sharding
     - due to the immutable nature of functional programming and nice error handling with the idea of "errors as values", error handling should be 
     easy and everything predictable
-
+- [ ] API completeness
+    - most libraries dont actually cover every corner of the discord api
 
 abcdefghh!!
