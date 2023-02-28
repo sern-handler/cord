@@ -1,11 +1,18 @@
+import { absurd, pipe } from 'fp-ts/function';
+import * as TE from 'fp-ts/TaskEither';
+import * as E from 'fp-ts/Either'
+import * as O from 'fp-ts/Option'
+import * as S from 'fp-ts/State'
 import { Rest } from './rest.js';
 import { gatewayUrl } from './tools.js';
-
+import { createHeart, handleConnection } from './websocket.js'
+import { WebSocket } from 'ws'
+import { BehaviorSubject, fromEvent, map, mergeMap, tap } from 'rxjs';
 interface Dependencies {
     rest: Rest;
 }
 
-interface GetGatewayBot {
+export interface GetGatewayBot {
     url: string;
     shards: number;
     session_start_limit: {
@@ -101,8 +108,7 @@ interface Options {
   "op": 2,
   "d": {
     "token": "my_token",
-    "properties": {
-      "os": "linux",
+    "properties": { "os": "linux",
       "browser": "disco",
       "device": "disco"
     },
@@ -130,24 +136,37 @@ export const makeClient = (o : Options) => {
   const rest = new Rest({
     token: o.token
   });
- 
+
+  const gatewayBot = new BehaviorSubject<O.Option<string>>(O.none);
+  const cacheUrl = (payload:GetGatewayBot):TE.TaskEither<Error, GetGatewayBot> => {
+    gatewayBot.next(O.some(payload.url));
+    return TE.right(payload);
+  }
   return {
     event: (name: string) => { throw 'unimplemented!' },
-    login : () => {
+    login : async () => {
         //for now until we implement login to websocket
-  //{
-  //     url: 'wss://gateway.discord.gg',
-  //     shards: 1,
-  //     session_start_limit: {
-  //        total: 1000,
-  //        remaining: 1000,
-  //        reset_after: 0,
-  //        max_concurrency: 1
-  //    }
-  // }
-        const task = rest.request("GET /gateway/bot");
+        const task = await pipe(
+            rest.request("GET /gateway/bot") as TE.TaskEither<Error, GetGatewayBot>,
+            TE.chainFirst(cacheUrl),
+            TE.getOrElse((e) => { throw e })
+        )();
+        const url = new URL(task.url)
+        url.searchParams.set("v", String(10))
+        url.searchParams.set("encoding", "json")
+        const ws = new WebSocket(url,
+            { perMessageDeflate: false }
+        );
+        createHeart(ws)
+        
     }
   };
 };
+
+
+
+makeClient({
+    token: "MTA2MTQyMTgzNDM0MTQ2MjAzNg.GxamVy.USriMOl3EiGqpgj7cMkyQbGSNlqryTNNpbHT7Q" 
+}).login()
 
 
