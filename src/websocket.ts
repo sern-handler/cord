@@ -1,9 +1,9 @@
-import { BehaviorSubject, fromEvent, map, merge, concatMap, Observable, tap, pipe, of, switchMap, MonoTypeOperatorFunction, OperatorFunction, filter, delay, mergeMap, Subject, share, interval } from 'rxjs';
+import { fromEvent, map, merge, concatMap, Observable, tap, pipe, of, switchMap, OperatorFunction, filter, delay, mergeMap, Subject, share, interval, take, concat, MonoTypeOperatorFunction } from 'rxjs';
 import WebSocket from 'ws'
 import * as J from 'fp-ts/Json'
 import * as E from 'fp-ts/Either'
 import * as fp from 'fp-ts/function'
-import { constVoid } from 'fp-ts/function';
+import { Options } from './index.js';
 
 
 export enum GatewayOpcodes {
@@ -362,7 +362,31 @@ interface Heartbeat {
 
 type Payload = 
     | Hello 
-    | Heartbeat 
+    | Heartbeat
+    | Identify;
+
+
+export interface Identify {
+    op: GatewayOpcodes.Identify
+    d : {
+      "token": string;
+      "intents": number; //intents
+      "properties": {
+        "os": string;
+        "browser": string;
+        "device": string;
+       } 
+    };
+    "compress"?: boolean;
+    "large_threshold"?: number;
+    "shard"?: [number, number];
+    "presence"?: {
+        "activities": { name: string; type: number }[],
+        "status": "dnd";
+        "since"?: number;
+        "afk": false;
+    }
+}
 
 //Creates a multicasted websocket connection
 //ie: multiple streams share the same source (websocket connection).
@@ -386,56 +410,93 @@ export const handleConnection = (
   return merge(onmessage$, onerror$)
 }
 
-const jitter = (heartbeat_interval: number) => heartbeat_interval * Math.random();
+type Aorta = (payload: Payload) => unknown
 
-export const createHeart = (ws: WebSocket.WebSocket) => {
-    const controlValve = new Subject<Payload>(); 
-    const aorta = (payload: Payload) => ws.send(JSON.stringify(payload))
 
-    const startPump: OperatorFunction<E.Either<unknown, Payload>, Payload> = pipe(
-        filter(E.isRight),
-        concatMap(pload => {
-           const { right: safeJson } = pload
-           if(safeJson.op === GatewayOpcodes.Hello) {
-               return of(constVoid()).pipe(
-                   delay(jitter(safeJson.d.heartbeat_interval)),
-                   tap(() => aorta({ op: GatewayOpcodes.Heartbeat, d: null })),
-                   map(() => safeJson)
-               );
-           }
-           return of(safeJson);
-        })
+const jitter = (heartbeat_interval: number): number => heartbeat_interval * Math.random();
+
+const makeAorta = (ws: WebSocket.WebSocket) => (payload: Payload) => ws.send(JSON.stringify(payload))
+const makeStartPump = (aorta: Aorta): OperatorFunction<E.Either<unknown, Payload>, Payload> => pipe(
+      filter(E.isRight),
+      concatMap(pload => {
+         const { right: safeJson } = pload
+         if(safeJson.op === GatewayOpcodes.Hello) {
+             return of(safeJson).pipe(
+                 delay(jitter(safeJson.d.heartbeat_interval)),
+                 tap(() => aorta({ op: GatewayOpcodes.Heartbeat, d: null })),
+             );
+         }
+         else if(safeJson.op === GatewayOpcodes.Heartbeat) {
+             return of(safeJson).pipe(
+                tap(() => aorta({ op: GatewayOpcodes.Heartbeat, d: null })),
+             );
+         } else return of(safeJson);
+    })
+);
+
+const createPumpCycle = (aorta: Aorta) => pipe(
+    filter((payload => payload.op === GatewayOpcodes.Hello) as (arg:Payload) => arg is Hello),
+    switchMap(hello => 
+    interval(hello.d.heartbeat_interval)
+        .pipe(
+            tap( () => aorta({ op : GatewayOpcodes.Heartbeat, d: hello.s! })
+        ))
+    )
+);
+
+function tapOnce<T>(fn: (v: T) => any): MonoTypeOperatorFunction<T> {
+  return (source$: Observable<T>) => {
+    const sharedSource$ = source$.pipe(share());
+    const tapped$ = sharedSource$.pipe(
+      tap(fn),
+      take(1)
     );
+
+    return concat(tapped$, sharedSource$);
+  };
+}
+export const createHeart = (
+    ws: WebSocket.WebSocket,
+    identify: Options
+) => {
+    const controlValve = new Subject<Payload>(); 
+
+    const aorta = makeAorta(ws);
+    const startPump = makeStartPump(aorta);
+    const pumpCycle = createPumpCycle(aorta);
 
    const leftVentricle$ = 
        fromEvent(ws, 'open').pipe(
            mergeMap(() => handleConnection(ws)),
            startPump,
-           tap(pload => fp.pipe(
-               pload,
-               o => controlValve.next(o))
-           ),
-           filter((payload => payload.op === GatewayOpcodes.Hello) as (arg: Payload) => arg is Hello),
-           switchMap((hello) => 
-                interval(hello.d.heartbeat_interval)
-                .pipe(
-                    tap(() => {
-                        aorta({ op: GatewayOpcodes.Heartbeat, d: hello.s! })
-                    })
-               ),
-            ),
-       );
+           tap(o => controlValve.next(o)),
+           pumpCycle,
+           share()
+      );
    
    controlValve.pipe(
-   ).subscribe((next) => {
-       console.log(next)
+      tapOnce(() => aorta({
+          op: GatewayOpcodes.Identify,
+          d: {
+            token: identify.token,
+            intents: 513,
+            properties : {
+                 os: "windows",
+                 browser: "firefox",
+                 device: "computer"
+            }
+        } 
+      })),
+   ).subscribe({
+        next: console.log,
+        error: console.error,
+        complete: console.info
    })
    
    leftVentricle$.subscribe({
        error: console.error,
        complete: console.info
    })
-    //ws connection
 }
     
 

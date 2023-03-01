@@ -1,11 +1,8 @@
 import { absurd, pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
-import * as E from 'fp-ts/Either'
 import * as O from 'fp-ts/Option'
-import * as S from 'fp-ts/State'
 import { Rest } from './rest.js';
-import { gatewayUrl } from './tools.js';
-import { createHeart, handleConnection } from './websocket.js'
+import { createHeart, Identify } from './websocket.js'
 import { WebSocket } from 'ws'
 import { BehaviorSubject, fromEvent, map, mergeMap, tap } from 'rxjs';
 interface Dependencies {
@@ -98,8 +95,17 @@ enum InteractionResponseType {
  Modal = 9,
 }
 
-interface Options {
+export interface Options {
   token : string;
+  identify : {
+    intents : number,
+    properties?: {
+        os: string;
+        browser: string;
+        device: string;
+    }
+  }
+  
 }
 
 
@@ -157,8 +163,7 @@ export const makeClient = (o : Options) => {
         const ws = new WebSocket(url,
             { perMessageDeflate: false }
         );
-        createHeart(ws)
-        
+        createHeart(ws, o,)
     }
   };
 };
@@ -166,7 +171,10 @@ export const makeClient = (o : Options) => {
 
 
 makeClient({
-    token: "MTA2MTQyMTgzNDM0MTQ2MjAzNg.GxamVy.USriMOl3EiGqpgj7cMkyQbGSNlqryTNNpbHT7Q" 
+    token: "",
+    identify: {
+        intents: 513
+    }
 }).login()
 
 
