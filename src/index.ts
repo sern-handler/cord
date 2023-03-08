@@ -190,13 +190,4 @@ export const makeClient = async (o : Options) => {
 
 
 
-const s = await makeClient({
-    token: "MTA2MTQyMTgzNDM0MTQ2MjAzNg.Gp10F8.2RGmljQ3sYfTWnw9MnB4SE5TaW4TCyvVOpJWlo",
-    identify: {
-        intents: 513
-    }
-})
-
-s.login()
-
 

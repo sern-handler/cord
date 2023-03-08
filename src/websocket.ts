@@ -1,4 +1,4 @@
-import { fromEvent, map, merge, concatMap, Observable, tap, pipe, of, OperatorFunction, filter, delay, switchMap, Subject, share, interval, take, concat, MonoTypeOperatorFunction, windowWhen, windowTime, mergeAll, shareReplay, finalize } from 'rxjs';
+import { fromEvent, map, merge, concatMap, Observable, tap, pipe, of, OperatorFunction, filter, delay, switchMap, Subject, share, interval, take, concat, MonoTypeOperatorFunction, windowWhen, windowTime, mergeAll, shareReplay, finalize, BehaviorSubject, defer } from 'rxjs';
 import WebSocket from 'ws'
 import * as J from 'fp-ts/Json'
 import * as E from 'fp-ts/Either';
@@ -202,14 +202,16 @@ type Aorta = (payload: Payload) => unknown
 const jitter = (heartbeat_interval: number): number => heartbeat_interval * Math.random();
 
 const makeAorta = (ws: WebSocket.WebSocket) => (payload: Payload) => ws.send(JSON.stringify(payload))
-const makeStartPump = (aorta: Aorta): OperatorFunction<E.Either<unknown, Payload>, Hello> => pipe(
-      filter(E.isRight),
+const makeStartPump = (aorta: Aorta, hs: BehaviorSubject<Hello|null>): OperatorFunction<Payload, Payload> =>
+    pipe(
       concatMap(pload => {
-         const { right: safeJson } = pload
-         if(safeJson.op === GatewayOpcodes.Hello) {
-            return of(safeJson).pipe(
-                  delay(jitter(safeJson.d.heartbeat_interval)),
-                  tap(() => aorta({ op: GatewayOpcodes.Heartbeat, d: null })),
+         if(pload.op === GatewayOpcodes.Hello) {
+            return of(pload).pipe(
+                  delay(jitter(pload.d.heartbeat_interval)),
+                  tap(() => {
+                      aorta({ op: GatewayOpcodes.Heartbeat, d: null })
+                      hs.next(pload)
+                  }),
              );
          }
          throw Error("Heartbeat out of sync");
@@ -252,21 +254,24 @@ export const createHeart = (
     options: Options
 ) => {
      const controlValve = new Subject<Payload>(); 
+     const hello = new BehaviorSubject<Hello|null>(null);
      const heart$ = fromEvent(ws, 'on');
      const onError$ = fromEvent(ws, 'error').pipe(tap(console.error));
      const onDeath$ = fromEvent(ws, 'close').pipe(tap(console.info));
-     const messageStream$ = handleMessages$(ws)
+     const messageStream$ = handleMessages$(ws).pipe(filter(E.isRight), map(r => r.right))
      const aorta = makeAorta(ws);
-     const startPump = messageStream$.pipe(makeStartPump(aorta), finalize(() => console.log("start pump finalizing")));
-     const f = startPump.pipe(
-         switchMap(s => 
-            interval(s.d.heartbeat_interval)
-        ))
-     const leftVentricle$ = concat(
-         startPump,
-         merge(f, messageStream$.pipe(tap((e) => console.log("message"))))
-     )    
-   
+     const startPump = messageStream$.pipe(
+         makeStartPump(aorta, hello),
+     );
+    
+     const heartbeatt = defer(() => merge(messageStream$, interval(hello.value?.d.heartbeat_interval))).pipe(
+         tap((s) => {
+         })
+     )
+     
+     const mStre = messageStream$.pipe()
+     const leftVentricle$ = merge(heartbeatt, mStre);
+         
      
     return () => {
         controlValve.pipe(
@@ -276,7 +281,7 @@ export const createHeart = (
             complete: console.info
         });
         
-        return merge(heart$,leftVentricle$, onError$, onDeath$);
+        return merge(heart$,concat(startPump, leftVentricle$), onError$, onDeath$);
     }
 }
     

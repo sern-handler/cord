@@ -6,7 +6,7 @@
   "module": "dist/index.mjs",
   "scripts": {
     "tdd": "vitest --config ./vitest.config.ts",
-    "dev": "tsup --watch",
+    "dev": "tsup --watch --config tsup.e2econfig.js",
     "build": "tsup",
     "test": "vitest run"
   },
