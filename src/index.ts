@@ -1,10 +1,12 @@
-import { absurd, pipe } from 'fp-ts/function';
+import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
 import * as O from 'fp-ts/Option'
 import { Rest } from './rest.js';
-import { createHeart, Identify } from './websocket.js'
+import { createHeart } from './websocket.js'
 import { WebSocket } from 'ws'
-import { BehaviorSubject, fromEvent, map, mergeMap, tap } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
+import { gatewayUrl } from './tools.js';
+
 interface Dependencies {
     rest: Rest;
 }
@@ -137,44 +139,64 @@ export interface Options {
 }
 **/
 
+const makeWSUrl = (base: string, version: number, encoding: 'json') => {
+    const url = new URL(base)
+    url.searchParams.set("v", String(10))
+    url.searchParams.set("encoding", "json")
+    return url
+}
 
-export const makeClient = (o : Options) => {
+
+export const makeClient = async (o : Options) => {
   const rest = new Rest({
     token: o.token
   });
 
-  const gatewayBot = new BehaviorSubject<O.Option<string>>(O.none);
+  const gatewayBotUrl = new BehaviorSubject<O.Option<string>>(O.none);
+  const gatewayBotPayload = new BehaviorSubject<O.Option<GetGatewayBot>>(O.none);
   const cacheUrl = (payload:GetGatewayBot):TE.TaskEither<Error, GetGatewayBot> => {
-    gatewayBot.next(O.some(payload.url));
+    gatewayBotUrl.next(O.some(payload.url));
     return TE.right(payload);
   }
+
+  const cacheGatewayPayload = (payload: GetGatewayBot) : TE.TaskEither<Error, GetGatewayBot> => {
+    gatewayBotPayload.next(O.some(payload));
+    return TE.right(payload)
+  }
+
+  /*
+   * @NeedsRefactor
+   * Caches the url received from gateway/bot and also its payload.
+   * Also caches the Gateway Bot Payload and then returns the full url
+   * for a websocket's first 
+   * */
+  const url = await pipe(
+      rest.request("GET /gateway/bot") as TE.TaskEither<Error, GetGatewayBot>,
+      TE.chainFirst(cacheUrl),
+      TE.chainFirst(cacheGatewayPayload),
+      TE.map(p => makeWSUrl(p.url, 10, 'json')),
+      TE.getOrElse((e) => { throw e }),
+    )();
+  const ws = new WebSocket(url, { perMessageDeflate: false });
+  const heart = createHeart(ws, o)
   return {
     event: (name: string) => { throw 'unimplemented!' },
-    login : async () => {
+    login : () => {
         //for now until we implement login to websocket
-        const task = await pipe(
-            rest.request("GET /gateway/bot") as TE.TaskEither<Error, GetGatewayBot>,
-            TE.chainFirst(cacheUrl),
-            TE.getOrElse((e) => { throw e })
-        )();
-        const url = new URL(task.url)
-        url.searchParams.set("v", String(10))
-        url.searchParams.set("encoding", "json")
-        const ws = new WebSocket(url,
-            { perMessageDeflate: false }
-        );
-        createHeart(ws, o,)
+       heart().subscribe({ next: console.log, error: console.log }) 
     }
   };
 };
 
 
 
-makeClient({
-    token: "",
+const s = await makeClient({
+    token: "MTA2MTQyMTgzNDM0MTQ2MjAzNg.Gp10F8.2RGmljQ3sYfTWnw9MnB4SE5TaW4TCyvVOpJWlo",
     identify: {
         intents: 513
     }
-}).login()
+})
+
+s.login()
 
 
