@@ -183,7 +183,7 @@ export const makeClient = async (o : Options) => {
     event: (name: string) => { throw 'unimplemented!' },
     login : () => {
         //for now until we implement login to websocket
-       heart().subscribe({ next: console.log, error: console.log }) 
+       heart().subscribe({ error: console.log }) 
     }
   };
 };

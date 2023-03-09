@@ -263,25 +263,31 @@ export const createHeart = (
      const startPump = messageStream$.pipe(
          makeStartPump(aorta, hello),
      );
-    
-     const heartbeatt = defer(() => merge(messageStream$, interval(hello.value?.d.heartbeat_interval))).pipe(
-         tap((s) => {
-         })
+     const heartbeat$ = defer(() => interval(hello.value?.d.heartbeat_interval)).pipe(
+         tapOnce(() => fp.pipe(options, optionsToIdentify, aorta)),
+         tap(() => {
+             aorta( { op: GatewayOpcodes.Heartbeat, d: null });
+         }),
+     );
+     const mStre = messageStream$.pipe(
+        tap((e) => console.log(e, "mstre!")),
      )
-     
-     const mStre = messageStream$.pipe()
-     const leftVentricle$ = merge(heartbeatt, mStre);
+     const leftVentricle$ = merge(heartbeat$, mStre);
          
      
     return () => {
         controlValve.pipe(
-            tapOnce(() => fp.pipe(options, optionsToIdentify, aorta)),
         ).subscribe({
             error: console.error,
             complete: console.info
         });
         
-        return merge(heart$,concat(startPump, leftVentricle$), onError$, onDeath$);
+        return merge(
+            heart$,
+            concat(startPump, leftVentricle$),
+            onError$,
+            onDeath$
+        );
     }
 }
     
