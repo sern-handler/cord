@@ -1,11 +1,11 @@
 import { TokenType } from './structures/common.js';
-import { Endpoint, Inject, Path } from './tools.js';
-import { HttpVerb, injectPath } from './tools.js';
+import { Endpoint, Inject, Path } from './internal/tools.js';
+import { HttpVerb, injectPath } from './internal/tools.js';
 import * as TE from 'fp-ts/TaskEither'
 import * as J from 'fp-ts/Json'
 import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function';
-import { baseApiUrl } from './tools.js';
+import { baseApiUrl } from './internal/tools.js';
 export interface RestOptions {
   tokenType?: TokenType;
   token: string;

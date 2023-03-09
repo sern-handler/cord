@@ -1,4 +1,4 @@
-import { fromEvent, map, merge, concatMap, Observable, tap, pipe, of, OperatorFunction, filter, delay, switchMap, Subject, share, interval, take, concat, MonoTypeOperatorFunction, windowWhen, windowTime, mergeAll, shareReplay, finalize, BehaviorSubject, defer } from 'rxjs';
+import { fromEvent, map, merge, concatMap, Observable, tap, pipe, of, OperatorFunction, filter, delay, Subject, share, interval, take, concat, MonoTypeOperatorFunction,  BehaviorSubject, defer } from 'rxjs';
 import WebSocket from 'ws'
 import * as J from 'fp-ts/Json'
 import * as E from 'fp-ts/Either';
@@ -143,15 +143,17 @@ export enum RpcCloseEventCode {
   InvalidVersion = 4004,
   InvalidEncoding = 4005,
 }
-interface Hello { 
+export interface Hello { 
     t: null,
-    s: null | number,
+    s: null,
     op: GatewayOpcodes.Hello,
     d: { heartbeat_interval: number }
 }
-interface Heartbeat {
-    op : GatewayOpcodes.Heartbeat;
-    d : number | null;
+export interface Heartbeat {
+    t: number | null;
+    op: GatewayOpcodes.Heartbeat;
+    d?: number | null;
+    s?: number | null;
 }
 
 
@@ -209,7 +211,7 @@ const makeStartPump = (aorta: Aorta, hs: BehaviorSubject<Hello|null>): OperatorF
             return of(pload).pipe(
                   delay(jitter(pload.d.heartbeat_interval)),
                   tap(() => {
-                      aorta({ op: GatewayOpcodes.Heartbeat, d: null })
+                      aorta({ op: GatewayOpcodes.Heartbeat, d:null, t:null, s:null })
                       hs.next(pload)
                   }),
              );
@@ -245,7 +247,6 @@ function optionsToIdentify(options: Options): Identify {
            intents: options.identify.intents,
            properties : processedProperties 
         }
-
     }
 }
 
@@ -253,41 +254,45 @@ export const createHeart = (
     ws: WebSocket.WebSocket,
     options: Options
 ) => {
-     const controlValve = new Subject<Payload>(); 
+     const identifyPump = new Subject<void>(); 
      const hello = new BehaviorSubject<Hello|null>(null);
-     const heart$ = fromEvent(ws, 'on');
+     const sequence = new BehaviorSubject<number|null>(null);
+     const startHeart$ = fromEvent(ws, 'on');
      const onError$ = fromEvent(ws, 'error').pipe(tap(console.error));
      const onDeath$ = fromEvent(ws, 'close').pipe(tap(console.info));
      const messageStream$ = handleMessages$(ws).pipe(filter(E.isRight), map(r => r.right))
+
      const aorta = makeAorta(ws);
+
      const startPump = messageStream$.pipe(
          makeStartPump(aorta, hello),
-     );
+         tap(() => identifyPump.complete()));
+
      const heartbeat$ = defer(() => interval(hello.value?.d.heartbeat_interval)).pipe(
-         tapOnce(() => fp.pipe(options, optionsToIdentify, aorta)),
          tap(() => {
-             aorta( { op: GatewayOpcodes.Heartbeat, d: null });
+             aorta( { op: GatewayOpcodes.Heartbeat, d: sequence.getValue() });
+             console.log(process.memoryUsage().heapUsed)
          }),
      );
-     const mStre = messageStream$.pipe(
-        tap((e) => console.log(e, "mstre!")),
-     )
-     const leftVentricle$ = merge(heartbeat$, mStre);
          
-     
-    return () => {
-        controlValve.pipe(
-        ).subscribe({
-            error: console.error,
-            complete: console.info
-        });
-        
-        return merge(
-            heart$,
-            concat(startPump, leftVentricle$),
-            onError$,
-            onDeath$
-        );
+    return {
+        bloodStream$: messageStream$,
+        start: () => {
+            identifyPump.subscribe({
+                complete: () => {
+                    fp.pipe(options, optionsToIdentify, aorta);
+                    sequence.next(1);
+                }, 
+                error: console.error,
+            });
+            
+            return merge(
+                startHeart$,
+                concat(startPump, heartbeat$),
+                onError$,
+                onDeath$
+            );
+        }
     }
 }
     

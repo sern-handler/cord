@@ -1,4 +1,4 @@
-import { WS_URL } from "./constants.js";
+import { WS_URL } from "../constants.js";
 
 export enum HttpVerb {
   Get = 'GET',

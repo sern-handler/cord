@@ -4,8 +4,7 @@ import * as O from 'fp-ts/Option'
 import { Rest } from './rest.js';
 import { createHeart } from './websocket.js'
 import { WebSocket } from 'ws'
-import { BehaviorSubject } from 'rxjs';
-import { gatewayUrl } from './tools.js';
+import { BehaviorSubject, filter, tap } from 'rxjs';
 
 interface Dependencies {
     rest: Rest;
@@ -178,12 +177,13 @@ export const makeClient = async (o : Options) => {
       TE.getOrElse((e) => { throw e }),
     )();
   const ws = new WebSocket(url, { perMessageDeflate: false });
-  const heart = createHeart(ws, o)
+  const heart = createHeart(ws, o);
   return {
-    event: (name: string) => { throw 'unimplemented!' },
+    on: (name: string) => {
+        return heart.bloodStream$.pipe(filter(p => p.t === name))
+    },
     login : () => {
-        //for now until we implement login to websocket
-       heart().subscribe({ error: console.log }) 
+       heart.start().subscribe({ error: console.error }) 
     }
   };
 };

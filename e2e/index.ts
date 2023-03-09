@@ -9,7 +9,7 @@ export function load<T extends object>(struct: Struct<T>, path: string = '.env',
   }
 
   const file = readFileSync(path);
-  const lines = file.toString().split('\r\n');
+  const lines = file.toString().split('\n');
 
   const raw: Record<string, string> = {};
 
@@ -46,14 +46,19 @@ export function load<T extends object>(struct: Struct<T>, path: string = '.env',
 export type Struct<T extends object> = {
   [P in keyof T]: (str: string) => T[P];
 }
-load({ DISCORD_TOKEN: (e) => e })
+load({ DISCORD_TOKEN: (e) => e.trimEnd() })
+
 const s = await makeClient({
     token: process.env!.DISCORD_TOKEN!,
     identify: {
         intents: 513
     }
 })
-
 s.login()
+
+s.on('READY').subscribe(console.log)
+s.on('MESSAGE_CREATE').subscribe(console.log)
+
+
 
 
