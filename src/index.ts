@@ -4,7 +4,7 @@ import * as O from 'fp-ts/Option'
 import { Rest } from './rest.js';
 import { createHeart } from './websocket.js'
 import { WebSocket } from 'ws'
-import { BehaviorSubject, filter, tap } from 'rxjs';
+import { BehaviorSubject, filter } from 'rxjs';
 
 interface Dependencies {
     rest: Rest;
@@ -138,13 +138,13 @@ export interface Options {
 }
 **/
 
-const makeWSUrl = (base: string, version: number, encoding: 'json') => {
+function makeWSUrl(base:string, version: number, encoding: 'json') {
     const url = new URL(base)
-    url.searchParams.set("v", String(10))
-    url.searchParams.set("encoding", "json")
+    url.searchParams.set("v", String(version))
+    url.searchParams.set("encoding", encoding)
     return url
-}
 
+}
 
 export const makeClient = async (o : Options) => {
   const rest = new Rest({
@@ -180,7 +180,7 @@ export const makeClient = async (o : Options) => {
   const heart = createHeart(ws, o);
   return {
     on: (name: string) => {
-        return heart.bloodStream$.pipe(filter(p => p.t === name))
+        return heart.bloodStream$.pipe(filter(m => m.op !== 0))
     },
     login : () => {
        heart.start().subscribe({ error: console.error }) 

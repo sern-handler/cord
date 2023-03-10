@@ -1,6 +1,7 @@
 import { makeClient } from '../src/index.js'
 
 import { existsSync, readFileSync } from 'fs';
+import { GenericBotIntents } from '../src/constants.js';
 export function load<T extends object>(struct: Struct<T>, path: string = '.env', inject: boolean = true): T {
   const out: T = {} as never;
 
@@ -51,7 +52,7 @@ load({ DISCORD_TOKEN: (e) => e.trimEnd() })
 const s = await makeClient({
     token: process.env!.DISCORD_TOKEN!,
     identify: {
-        intents: 513
+        intents: GenericBotIntents  
     }
 })
 s.login()

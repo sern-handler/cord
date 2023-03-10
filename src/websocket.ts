@@ -1,4 +1,4 @@
-import { fromEvent, map, merge, concatMap, Observable, tap, pipe, of, OperatorFunction, filter, delay, Subject, share, interval, take, concat, MonoTypeOperatorFunction,  BehaviorSubject, defer } from 'rxjs';
+import { fromEvent, map, merge, concatMap, tap, pipe, of, OperatorFunction, filter, delay, Subject, share, interval, take, concat, BehaviorSubject, defer } from 'rxjs';
 import WebSocket from 'ws'
 import * as J from 'fp-ts/Json'
 import * as E from 'fp-ts/Either';
@@ -156,11 +156,17 @@ export interface Heartbeat {
     s?: number | null;
 }
 
+export interface Dispatch<T extends Record<string, any> = Record<string,any>> {
+    op: GatewayOpcodes.Dispatch,
+    s: number,
+    t: number | null,
+    d : T
+}
 
 type Payload = 
     | Hello 
     | Heartbeat
-    | Identify;
+    | Identify
 
 
 export interface Identify {
@@ -222,17 +228,17 @@ const makeStartPump = (aorta: Aorta, hs: BehaviorSubject<Hello|null>): OperatorF
 );
 
 
-function tapOnce<T>(fn: (v: T) => any): MonoTypeOperatorFunction<T> {
-  return (source$: Observable<T>) => {
-    const sharedSource$ = source$.pipe(share());
-    const tapped$ = sharedSource$.pipe(
-      tap(fn),
-      take(1)
-    );
-
-    return concat(tapped$, sharedSource$);
-  };
-}
+//function tapOnce<T>(fn: (v: T) => any): MonoTypeOperatorFunction<T> {
+//  return (source$: Observable<T>) => {
+//    const sharedSource$ = source$.pipe(share());
+//    const tapped$ = sharedSource$.pipe(
+//      tap(fn),
+//      take(1)
+//    );
+//
+//    return concat(tapped$, sharedSource$);
+//  };
+//}
 
 function optionsToIdentify(options: Options): Identify {
     const processedProperties = fp.pipe(
@@ -254,14 +260,13 @@ export const createHeart = (
     ws: WebSocket.WebSocket,
     options: Options
 ) => {
-     const identifyPump = new Subject<void>(); 
+     const identifyPump = new Subject<never>(); 
      const hello = new BehaviorSubject<Hello|null>(null);
      const sequence = new BehaviorSubject<number|null>(null);
      const startHeart$ = fromEvent(ws, 'on');
      const onError$ = fromEvent(ws, 'error').pipe(tap(console.error));
      const onDeath$ = fromEvent(ws, 'close').pipe(tap(console.info));
      const messageStream$ = handleMessages$(ws).pipe(filter(E.isRight), map(r => r.right))
-
      const aorta = makeAorta(ws);
 
      const startPump = messageStream$.pipe(
@@ -269,14 +274,14 @@ export const createHeart = (
          tap(() => identifyPump.complete()));
 
      const heartbeat$ = defer(() => interval(hello.value?.d.heartbeat_interval)).pipe(
-         tap(() => {
-             aorta( { op: GatewayOpcodes.Heartbeat, d: sequence.getValue() });
-             console.log(process.memoryUsage().heapUsed)
-         }),
+         tap(() => 
+             aorta( { op: GatewayOpcodes.Heartbeat, d: sequence.getValue(), t: null })
+         ),
      );
          
     return {
-        bloodStream$: messageStream$,
+        //ensures bloodStream$ recieves mesages after identification (op 2)
+        bloodStream$: concat(identifyPump, messageStream$),
         start: () => {
             identifyPump.subscribe({
                 complete: () => {
