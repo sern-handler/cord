@@ -150,7 +150,7 @@ export interface Hello {
     d: { heartbeat_interval: number }
 }
 export interface Heartbeat {
-    t: number | null;
+    t: string | null;
     op: GatewayOpcodes.Heartbeat;
     d?: number | null;
     s?: number | null;
@@ -159,7 +159,7 @@ export interface Heartbeat {
 export interface Dispatch<T extends Record<string, any> = Record<string,any>> {
     op: GatewayOpcodes.Dispatch,
     s: number,
-    t: number | null,
+    t: string | null,
     d : T
 }
 
@@ -171,6 +171,7 @@ type Payload =
 
 export interface Identify {
     op: GatewayOpcodes.Identify
+    t: null
     d : {
       "token": string;
       "intents": number; //intents
@@ -247,6 +248,7 @@ function optionsToIdentify(options: Options): Identify {
         O.getOrElse(() => ({ os: 'sern', browser: 'sern', device: 'sern' }))
     );
     return {
+        t: null,
         op: GatewayOpcodes.Identify,
         d : {
            token: options.token,
@@ -254,6 +256,10 @@ function optionsToIdentify(options: Options): Identify {
            properties : processedProperties 
         }
     }
+}
+
+function makeResumeManager() {
+
 }
 
 export const createHeart = (
@@ -278,10 +284,16 @@ export const createHeart = (
              aorta( { op: GatewayOpcodes.Heartbeat, d: sequence.getValue(), t: null })
          ),
      );
-         
+    const dispatchOpcodes = (a : Aorta) => {
+        
+    }
+    
     return {
         //ensures bloodStream$ recieves mesages after identification (op 2)
-        bloodStream$: concat(identifyPump, messageStream$),
+        bloodStream$: concat(
+            identifyPump,
+            messageStream$.pipe(tap(() => sequence.next(sequence.getValue())))
+        ),
         start: () => {
             identifyPump.subscribe({
                 complete: () => {

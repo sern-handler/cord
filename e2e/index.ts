@@ -1,7 +1,8 @@
 import { makeClient } from '../src/index.js'
-
+import { EOL } from 'node:os'
 import { existsSync, readFileSync } from 'fs';
 import { GenericBotIntents } from '../src/constants.js';
+import { firstValueFrom, take } from 'rxjs';
 export function load<T extends object>(struct: Struct<T>, path: string = '.env', inject: boolean = true): T {
   const out: T = {} as never;
 
@@ -10,7 +11,7 @@ export function load<T extends object>(struct: Struct<T>, path: string = '.env',
   }
 
   const file = readFileSync(path);
-  const lines = file.toString().split('\n');
+  const lines = file.toString().split(EOL);
 
   const raw: Record<string, string> = {};
 
@@ -57,7 +58,8 @@ const s = await makeClient({
 })
 s.login()
 
-s.on('READY').subscribe(console.log)
+const f = await firstValueFrom(s.on('READY'))
+console.log(f)
 s.on('MESSAGE_CREATE').subscribe(console.log)
 
 

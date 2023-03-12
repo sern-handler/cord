@@ -180,7 +180,7 @@ export const makeClient = async (o : Options) => {
   const heart = createHeart(ws, o);
   return {
     on: (name: string) => {
-        return heart.bloodStream$.pipe(filter(m => m.op !== 0))
+        return heart.bloodStream$.pipe(filter(m => m.t === name))
     },
     login : () => {
        heart.start().subscribe({ error: console.error }) 
