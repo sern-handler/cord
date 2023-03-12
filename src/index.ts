@@ -2,7 +2,7 @@ import { pipe } from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
 import * as O from 'fp-ts/Option'
 import { Rest } from './rest.js';
-import { createHeart } from './websocket.js'
+import { createHeart, GatewayOpcodes } from './websocket.js'
 import { WebSocket } from 'ws'
 import { BehaviorSubject, filter } from 'rxjs';
 
@@ -146,9 +146,9 @@ function makeWSUrl(base:string, version: number, encoding: 'json') {
 
 }
 
-export const makeClient = async (o : Options) => {
+export const makeClient = async (options : Options) => {
   const rest = new Rest({
-    token: o.token
+    token: options.token
   });
 
   const gatewayBotUrl = new BehaviorSubject<O.Option<string>>(O.none);
@@ -177,10 +177,13 @@ export const makeClient = async (o : Options) => {
       TE.getOrElse((e) => { throw e }),
     )();
   const ws = new WebSocket(url, { perMessageDeflate: false });
-  const heart = createHeart(ws, o);
+  const heart = createHeart(ws, options);
   return {
     on: (name: string) => {
-        return heart.bloodStream$.pipe(filter(m => m.t === name))
+        return heart.bloodStream$
+            .pipe(
+                filter(m => m.op === GatewayOpcodes.Dispatch && m.t === name)
+            )
     },
     login : () => {
        heart.start().subscribe({ error: console.error }) 

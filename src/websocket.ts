@@ -5,6 +5,7 @@ import * as E from 'fp-ts/Either';
 import * as O from 'fp-ts/Option';
 import * as fp from 'fp-ts/function'
 import { Options } from './index.js';
+import { GatewayIntentBits } from './constants.js';
 
 
 export enum GatewayOpcodes {
@@ -156,17 +157,32 @@ export interface Heartbeat {
     s?: number | null;
 }
 
-export interface Dispatch<T extends Record<string, any> = Record<string,any>> {
-    op: GatewayOpcodes.Dispatch,
-    s: number,
-    t: string | null,
-    d : T
+interface CoreDispatch {
+    t: string  |null; 
+    d: unknown;
+    op: GatewayOpcodes.Dispatch;
+    s: number | null;
 }
-
+export interface ReadyDispatch extends CoreDispatch {
+    t: "READY";
+    d: {
+        v: number;
+        user : any;
+        guilds: any[];
+        session_id: string;
+        resume_gateway_url: string;
+        shard?: [number,number];
+        application: any
+    }
+}
+type Dispatch =
+    | ReadyDispatch
 type Payload = 
     | Hello 
     | Heartbeat
     | Identify
+    | Resume
+    | Dispatch
 
 
 export interface Identify {
@@ -192,6 +208,14 @@ export interface Identify {
     }
 }
 
+export interface Resume {
+    "op": GatewayOpcodes.Resume,
+    "d": {
+        "token": string; 
+        "session_id": string;
+        "seq": number 
+    }
+}
 //Creates a multicasted websocket connection
 //ie: multiple streams share the same source (websocket connection).
 export const handleMessages$ = (
@@ -229,18 +253,6 @@ const makeStartPump = (aorta: Aorta, hs: BehaviorSubject<Hello|null>): OperatorF
 );
 
 
-//function tapOnce<T>(fn: (v: T) => any): MonoTypeOperatorFunction<T> {
-//  return (source$: Observable<T>) => {
-//    const sharedSource$ = source$.pipe(share());
-//    const tapped$ = sharedSource$.pipe(
-//      tap(fn),
-//      take(1)
-//    );
-//
-//    return concat(tapped$, sharedSource$);
-//  };
-//}
-
 function optionsToIdentify(options: Options): Identify {
     const processedProperties = fp.pipe(
         options.identify.properties,
@@ -259,6 +271,28 @@ function optionsToIdentify(options: Options): Identify {
 }
 
 function makeResumeManager() {
+
+}
+
+function dispatchOpcodes(
+    payload: Payload,
+    gatewayReconnectSetter : BehaviorSubject<O.Option<string>>
+) {
+    switch(payload.op){
+       case GatewayOpcodes.Dispatch: { 
+          switch(payload.t) {
+            case "READY" : {
+               gatewayReconnectSetter.next(O.some(payload.d.resume_gateway_url)) 
+            } break;
+            case null : {
+
+            } break;
+          }
+       } break;
+       case GatewayOpcodes.Resume : {
+
+       } break;
+    }
 
 }
 
@@ -284,15 +318,19 @@ export const createHeart = (
              aorta( { op: GatewayOpcodes.Heartbeat, d: sequence.getValue(), t: null })
          ),
      );
-    const dispatchOpcodes = (a : Aorta) => {
         
-    }
-    
     return {
         //ensures bloodStream$ recieves mesages after identification (op 2)
         bloodStream$: concat(
             identifyPump,
-            messageStream$.pipe(tap(() => sequence.next(sequence.getValue())))
+            messageStream$.pipe(tap(() => {
+                const currentSequence = sequence.getValue()
+                if(currentSequence !== null) {
+                    sequence.next(currentSequence + 1)
+                } else {
+                    console.debug('sequence number null')
+                }
+            }))
         ),
         start: () => {
             identifyPump.subscribe({
