@@ -6,6 +6,7 @@ export interface Item {
   id: Snowflake;
 }
 
+
 export enum Locales {
   Indonesian = 'id',
   Danish = 'da',

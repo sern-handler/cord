@@ -1,10 +1,6 @@
-import type { Option } from '@rqft/rust';
-import { None, Some, unimplemented } from '@rqft/rust';
 import type { RawApplicationRoleConnectionMetadata } from './application.js';
 import type { Item } from './common.js';
 import type { RawIntegration } from './guild.js';
-import { Id } from './id.js';
-// import { inject_path } from '../tools';
 
 export interface RawUser extends Item {
   // id: Snowflake;
@@ -23,33 +19,59 @@ export interface RawUser extends Item {
   premium_type?: PremiumType;
   public_flags?: number;
 }
-
-export class User {
-  constructor(private raw: RawUser) {}
-  public get id(): Id {
-    return new Id(this.raw.id);
-  }
-
-  public get username(): string {
-    return this.raw.id;
-  }
-
-  public get discriminator(): string {
-    return this.raw.discriminator;
-  }
-
-  public get avatar(): Option<string> {
-    if (this.raw.avatar) {
-      return Some(this.raw.avatar);
-    }
-
-    return None;
-  }
-
-  public get avatarUrl(): Option<string> {
-    return unimplemented();
-  }
+interface From<T> {
+    from(value : T): From<T> 
 }
+
+interface Into<T> {
+    into() : T
+}
+
+function id() {
+
+}
+
+function username() {
+
+}
+
+function discriminator() {
+
+}
+
+function avatar() {
+
+}
+
+function avatarUrl() {
+
+}
+// class User {
+//  constructor(private raw: RawUser) {}
+//  public get id(): Id {
+//    return new Id(this.raw.id);
+//  }
+//
+//  public get username(): string {
+//    return this.raw.id;
+//  }
+//
+//  public get discriminator(): string {
+//    return this.raw.discriminator;
+//  }
+//
+//  public get avatar(): Option<string> {
+//    if (this.raw.avatar) {
+//      return Some(this.raw.avatar);
+//    }
+//
+//    return None;
+//  }
+//
+//  public get avatarUrl(): Option<string> {
+//    return unimplemented();
+//  }
+//}
 
 export enum UserFlag {
   DiscordEmployee = 1 << 0,
@@ -155,3 +177,6 @@ export enum Endpoints {
   GetUserApplicationRoleConnection = 'GET /users/@me/applications/{application.id}/role-connection',
   UpdateUserApplicationRoleConnection = 'PUT /users/@me/applications/{application.id}/role-connection',
 }
+
+
+

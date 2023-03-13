@@ -5,7 +5,7 @@ import * as E from 'fp-ts/Either';
 import * as O from 'fp-ts/Option';
 import * as fp from 'fp-ts/function'
 import { Options } from './index.js';
-import { GatewayIntentBits } from './constants.js';
+import { filterMap } from './internal/tools.js';
 
 
 export enum GatewayOpcodes {
@@ -55,95 +55,7 @@ export enum GatewayOpcodes {
   */
   HeartbeatAck,
 }
-export enum GatewayCloseEventCode {
-  UnknownError = 4000,
-  UnknownOpCode = 4001,
-  DecodeError = 4002,
-  NotAuthenticated = 4003,
-  AuthenticationFailed = 4004,
-  AlreadyAuthenticated = 4005,
-  InvalidSeq = 4007,
-  Ratelimited = 4008,
-  SessionTimedOut = 4009,
-  InvalidShard = 4010,
-  ShardingRequired = 4011,
-  InvalidApiVersion = 4012,
-  InvalidIntents = 4013,
-  DisallowedIntents = 4014,
-}
 
-export enum VoiceOpCode {
-  Identify = 0,
-  SelectProtocol = 1,
-  Ready = 2,
-  Heartbeat = 3,
-  SessionDescription = 4,
-  Speaking = 5,
-  HeartbeatAck = 6,
-  Resume = 7,
-  Hello = 8,
-  Resumed = 9,
-  ClientDisconnect = 13,
-}
-
-export enum VoiceCloseEventCode {
-  UnknownOpCode = 4001,
-  FailedToDecodePayload = 4002,
-  NotAuthenticated = 4003,
-  AuthenticationFailed = 4004,
-  AlreadyAuthenticated = 4005,
-  SessionNoLongerValid = 4006,
-  SessionTimeout = 4009,
-  ServerNotFound = 4011,
-  UnknownProtocol = 4012,
-  Disconnected = 4014,
-  VoiceServerCrashed = 4015,
-  UnknownEncryptionMode = 4016,
-}
-
-export enum HttpResponseCode {
-  Ok = 200,
-  Created = 201,
-  NoContent = 204,
-  NotModified = 304,
-  BadRequest = 400,
-  Unauthorized = 401,
-  Forbidden = 403,
-  NotFound = 404,
-  MethodNotAllowed = 405,
-  TooManyRequests = 429,
-  GatewayUnavailable = 502,
-  // ServerError = 5xx
-}
-
-
-export enum RpcErrorCode {
-  UnknownError = 1000,
-  InvalidPayload = 4000,
-  InvalidCommand = 4002,
-  InvalidGuild = 4003,
-  InvalidEvent = 4004,
-  InvalidChannel = 4005,
-  InvalidPermissions = 4006,
-  InvalidClientId = 4007,
-  InvalidOrigin = 4008,
-  InvalidToken = 4009,
-  InvalidUser = 4010,
-  OAuth2Error = 5000,
-  SelectChannelTimedOut = 5001,
-  GetGuildTimedOut = 5002,
-  SelectVoiceForceRequired = 5003,
-  CaptureShortcutAlreadyListening = 5004,
-}
-
-export enum RpcCloseEventCode {
-  InvalidClientId = 4000,
-  InvalidOrigin = 4001,
-  Ratelimited = 4002,
-  TokenRevoked = 4003,
-  InvalidVersion = 4004,
-  InvalidEncoding = 4005,
-}
 export interface Hello { 
     t: null,
     s: null,
@@ -154,7 +66,7 @@ export interface Heartbeat {
     t: string | null;
     op: GatewayOpcodes.Heartbeat;
     d?: number | null;
-    s?: number | null;
+    s: number | null;
 }
 
 interface CoreDispatch {
@@ -176,18 +88,19 @@ export interface ReadyDispatch extends CoreDispatch {
     }
 }
 type Dispatch =
-    | ReadyDispatch
+    | ReadyDispatch;
 type Payload = 
     | Hello 
     | Heartbeat
     | Identify
     | Resume
-    | Dispatch
+    | Dispatch;
 
 
 export interface Identify {
     op: GatewayOpcodes.Identify
-    t: null
+    t: null,
+    s: null,
     d : {
       "token": string;
       "intents": number; //intents
@@ -209,23 +122,26 @@ export interface Identify {
 }
 
 export interface Resume {
+    "t" : null,
     "op": GatewayOpcodes.Resume,
     "d": {
         "token": string; 
         "session_id": string;
         "seq": number 
-    }
+    };
+    s: null;
 }
 //Creates a multicasted websocket connection
 //ie: multiple streams share the same source (websocket connection).
 export const handleMessages$ = (
     ws: WebSocket.WebSocket
 ) => {
-   const onmessage$ = fromEvent<MessageEvent>(ws, 'message')
-    .pipe(
-        map(we => J.parse(we.data as string) as E.Either<unknown,Payload>),
-        share()
-    );
+  const onmessage$ = fromEvent<MessageEvent>(ws, 'message')
+   .pipe(
+       map(we => J.parse(we.data as string) as E.Either<unknown,Payload>),
+       filterMap(),
+       share()
+   );
   return onmessage$;
 }
 
@@ -261,6 +177,7 @@ function optionsToIdentify(options: Options): Identify {
     );
     return {
         t: null,
+        s: null,
         op: GatewayOpcodes.Identify,
         d : {
            token: options.token,
@@ -276,7 +193,8 @@ function makeResumeManager() {
 
 function dispatchOpcodes(
     payload: Payload,
-    gatewayReconnectSetter : BehaviorSubject<O.Option<string>>
+    gatewayReconnectSetter : BehaviorSubject<O.Option<string>>,
+    aorta: Aorta,
 ) {
     switch(payload.op){
        case GatewayOpcodes.Dispatch: { 
@@ -292,6 +210,10 @@ function dispatchOpcodes(
        case GatewayOpcodes.Resume : {
 
        } break;
+       //https://discord.com/developers/docs/topics/gateway#heartbeat-requests
+       case GatewayOpcodes.Heartbeat: {
+        aorta({ op: GatewayOpcodes.Heartbeat, t: null, s: null })
+       }
     }
 
 }
@@ -306,7 +228,7 @@ export const createHeart = (
      const startHeart$ = fromEvent(ws, 'on');
      const onError$ = fromEvent(ws, 'error').pipe(tap(console.error));
      const onDeath$ = fromEvent(ws, 'close').pipe(tap(console.info));
-     const messageStream$ = handleMessages$(ws).pipe(filter(E.isRight), map(r => r.right))
+     const messageStream$ = handleMessages$(ws);
      const aorta = makeAorta(ws);
 
      const startPump = messageStream$.pipe(
@@ -314,19 +236,18 @@ export const createHeart = (
          tap(() => identifyPump.complete()));
 
      const heartbeat$ = defer(() => interval(hello.value?.d.heartbeat_interval)).pipe(
-         tap(() => 
-             aorta( { op: GatewayOpcodes.Heartbeat, d: sequence.getValue(), t: null })
-         ),
+         tap(() => {
+             aorta({ op: GatewayOpcodes.Heartbeat, d: sequence.getValue(), t: null, s: null })
+         }),
      );
         
     return {
         //ensures bloodStream$ recieves mesages after identification (op 2)
         bloodStream$: concat(
             identifyPump,
-            messageStream$.pipe(tap(() => {
-                const currentSequence = sequence.getValue()
-                if(currentSequence !== null) {
-                    sequence.next(currentSequence + 1)
+            messageStream$.pipe(tap((e) => {
+                if(e.s !== null) {
+                    sequence.next(e.s);
                 } else {
                     console.debug('sequence number null')
                 }
@@ -336,7 +257,6 @@ export const createHeart = (
             identifyPump.subscribe({
                 complete: () => {
                     fp.pipe(options, optionsToIdentify, aorta);
-                    sequence.next(1);
                 }, 
                 error: console.error,
             });

@@ -7,7 +7,6 @@ specifiers:
   '@types/ws': ^8.5.4
   '@typescript-eslint/eslint-plugin': ^5.54.0
   '@typescript-eslint/parser': ^5.54.0
-  dotenv: ^16.0.3
   eslint: ^8.35.0
   fp-ts: ^2.13.1
   pnpm: ^7.28.0
@@ -30,7 +29,6 @@ devDependencies:
   '@types/ws': 8.5.4
   '@typescript-eslint/eslint-plugin': 5.54.0_6mj2wypvdnknez7kws2nfdgupi
   '@typescript-eslint/parser': 5.54.0_ycpbpc6yetojsgtrx3mwntkhsu
-  dotenv: 16.0.3
   eslint: 8.35.0
   prettier: 2.8.4
   tsup: 6.6.3_typescript@4.9.5
@@ -946,11 +944,6 @@ packages:
     engines: {node: '>=6.0.0'}
     dependencies:
       esutils: 2.0.3
-    dev: true
-
-  /dotenv/16.0.3:
-    resolution: {integrity: sha512-7GO6HghkA5fYG9TYnNxi14/7K9f5occMlp3zXAuSxn7CKCxt9xbNWG7yF8hTCSUchlfWSe3uLmlPfigevRItzQ==}
-    engines: {node: '>=12'}
     dev: true
 
   /eastasianwidth/0.2.0:
