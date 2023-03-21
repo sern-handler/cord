@@ -1,4 +1,4 @@
-import { fromEvent, map, merge, concatMap, tap, pipe, of, OperatorFunction, filter, delay, Subject, share, interval, take, concat, BehaviorSubject, defer } from 'rxjs';
+import { fromEvent, map, merge, concatMap, tap, pipe, of, OperatorFunction, filter, delay, Subject, share, interval, take, concat, BehaviorSubject, defer, Observable, EMPTY, throwError, timeout, catchError } from 'rxjs';
 import WebSocket from 'ws'
 import * as J from 'fp-ts/Json'
 import * as E from 'fp-ts/Either';
@@ -69,6 +69,12 @@ export interface Heartbeat {
     s: number | null;
 }
 
+export interface HeartbeatAck {
+    t: null;
+    op: GatewayOpcodes.HeartbeatAck;
+    d: null;
+    s: null;
+}
 interface CoreDispatch {
     t: string  |null; 
     d: unknown;
@@ -93,6 +99,7 @@ type Payload =
     | Hello 
     | Heartbeat
     | Identify
+    | HeartbeatAck
     | Resume
     | Dispatch;
 
@@ -151,7 +158,8 @@ type Aorta = (payload: Payload) => unknown
 const jitter = (heartbeat_interval: number): number => heartbeat_interval * Math.random();
 
 const makeAorta = (ws: WebSocket.WebSocket) => (payload: Payload) => ws.send(JSON.stringify(payload))
-const makeStartPump = (aorta: Aorta, hs: BehaviorSubject<Hello|null>): OperatorFunction<Payload, Payload> =>
+
+const makeStartPump = (aorta: Aorta, hs: BehaviorSubject<O.Option<Hello>>): OperatorFunction<Payload, Payload> =>
     pipe(
       concatMap(pload => {
          if(pload.op === GatewayOpcodes.Hello) {
@@ -159,7 +167,7 @@ const makeStartPump = (aorta: Aorta, hs: BehaviorSubject<Hello|null>): OperatorF
                   delay(jitter(pload.d.heartbeat_interval)),
                   tap(() => {
                       aorta({ op: GatewayOpcodes.Heartbeat, d:null, t:null, s:null })
-                      hs.next(pload)
+                      hs.next(O.some(pload))
                   }),
              );
          }
@@ -218,52 +226,89 @@ function dispatchOpcodes(
 
 }
 
+const intoInterval = 
+    O.match(
+        () => throwError(() => Error("Heartbeat out of sync: Hello event has not been recieved")),
+        (rate: number) => interval(rate) 
+    )
+
+
+const maybeHeartBeat = O.map((payload: Hello) => payload.d.heartbeat_interval)
+
+const heartbeatOrThrow =
+    O.match(
+        () => throwError(() => Error("Heartbeat out of sync: Hello event has not been recieved")),
+        (rate: number) => of(rate).pipe(concatMap(() => timeout(rate))) 
+    )
+
+
+
 export const createHeart = (
     ws: WebSocket.WebSocket,
     options: Options
 ) => {
      const identifyPump = new Subject<never>(); 
-     const hello = new BehaviorSubject<Hello|null>(null);
+     const hello = new BehaviorSubject<O.Option<Hello>>(O.none);
      const sequence = new BehaviorSubject<number|null>(null);
+     const gatewayReconnectPayload = new BehaviorSubject<O.Option<ReadyDispatch>>(O.none);
      const startHeart$ = fromEvent(ws, 'on');
-     const onError$ = fromEvent(ws, 'error').pipe(tap(console.error));
-     const onDeath$ = fromEvent(ws, 'close').pipe(tap(console.info));
+     const onError$: Observable<WebSocket.ErrorEvent> = fromEvent(ws, 'error').pipe(
+         tap(console.error)
+     );
+     const onDeath$: Observable<WebSocket.CloseEvent> = fromEvent(ws, 'close').pipe(
+         tap(console.info)
+     );
      const messageStream$ = handleMessages$(ws);
      const aorta = makeAorta(ws);
 
      const startPump = messageStream$.pipe(
          makeStartPump(aorta, hello),
-         tap(() => identifyPump.complete()));
-
-     const heartbeat$ = defer(() => interval(hello.value?.d.heartbeat_interval)).pipe(
+         tap(() => identifyPump.complete())
+     );
+     const intervalHeartbeat$ = () => fp.pipe(hello.value, maybeHeartBeat, intoInterval)
+     const heartbeat$ = defer(intervalHeartbeat$).pipe(
          tap(() => {
              aorta({ op: GatewayOpcodes.Heartbeat, d: sequence.getValue(), t: null, s: null })
          }),
      );
+     const timeout$ = messageStream$.pipe(
+         filter(payload => payload.op === GatewayOpcodes.HeartbeatAck),
+         concatMap(() => 
+            fp.pipe(
+               hello.value, 
+               maybeHeartBeat,
+               heartbeatOrThrow
+         ).pipe(
+            catchError((err, obs) => { 
+                return obs
+            })
+         )),
+         
+     )
         
     return {
         //ensures bloodStream$ recieves mesages after identification (op 2)
         bloodStream$: concat(
             identifyPump,
             messageStream$.pipe(tap((e) => {
-                if(e.s !== null) {
-                    sequence.next(e.s);
-                } else {
-                    console.debug('sequence number null')
-                }
-            }))
+                    if(e.s !== null) {
+                        sequence.next(e.s);
+                    } else {
+                        console.debug('sequence number null')
+                    }
+                })
+            )
         ),
         start: () => {
             identifyPump.subscribe({
                 complete: () => {
                     fp.pipe(options, optionsToIdentify, aorta);
-                }, 
-                error: console.error,
+                } 
             });
             
             return merge(
                 startHeart$,
-                concat(startPump, heartbeat$),
+                concat(startPump, merge(heartbeat$, timeout$)),
                 onError$,
                 onDeath$
             );

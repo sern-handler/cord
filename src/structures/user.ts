@@ -46,6 +46,8 @@ function avatar() {
 function avatarUrl() {
 
 }
+
+
 // class User {
 //  constructor(private raw: RawUser) {}
 //  public get id(): Id {
@@ -177,6 +179,4 @@ export enum Endpoints {
   GetUserApplicationRoleConnection = 'GET /users/@me/applications/{application.id}/role-connection',
   UpdateUserApplicationRoleConnection = 'PUT /users/@me/applications/{application.id}/role-connection',
 }
-
-
 

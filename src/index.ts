@@ -73,7 +73,7 @@ export const makeClient = async (options : Options) => {
                 filter(m => m.op === GatewayOpcodes.Dispatch && m.t === name)
             )
     },
-    login: () => heart.start().subscribe({ error: console.error }),
+    login: () => heart.start().subscribe(),
     clientUser: () => rest.request(User.Endpoints.GetCurrentUser) as TE.TaskEither<Error, User.RawUser>
   };
 };

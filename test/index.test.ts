@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { link } from '../src/tools'
+import { link } from '../src/internal/tools'
 describe('link generator', () => {
     
     it("should make version x api base link", () => {
