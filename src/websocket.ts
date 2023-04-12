@@ -1,4 +1,26 @@
-import { fromEvent, map, merge, concatMap, tap, pipe, of, OperatorFunction, filter, delay, Subject, share, interval, take, concat, BehaviorSubject, defer, Observable, EMPTY, throwError, timeout, catchError } from 'rxjs';
+import { 
+    fromEvent,
+    map,
+    merge,
+    concatMap,
+    tap,
+    pipe,
+    of,
+    OperatorFunction,
+    filter,
+    delay,
+    Subject,
+    share,
+    interval,
+    take,
+    concat,
+    BehaviorSubject,
+    defer,
+    Observable,
+    throwError,
+    timeout,
+    catchError 
+} from 'rxjs';
 import WebSocket from 'ws'
 import * as J from 'fp-ts/Json'
 import * as E from 'fp-ts/Either';
@@ -6,138 +28,10 @@ import * as O from 'fp-ts/Option';
 import * as fp from 'fp-ts/function'
 import { Options } from './index.js';
 import { filterMap } from './internal/tools.js';
+import { GatewayOpcodes, Hello, Identify, Payload } from './types/dispatch'
+import { Lazy } from 'fp-ts/function';
 
 
-export enum GatewayOpcodes {
-   /*
-    * An event was dispatched
-    */
-  Dispatch,
-   /*
-    * A bidirectional opcode to maintain an active gateway connection.
-    * Fired periodically by the client, or fired by the gateway to request an immediate heartbeat from the client.
-    */
-  Heartbeat,
-   /*
-    * Starts a new session during the initial handshake
-    */
-  Identify,
-   /*
-    * Update the client's presence
-    */
-  PresenceUpdate,
-   /*
-    * Used to join/leave or move between voice channels
-    */
-  VoiceStateUpdate,
-   /*
-    * Resume a previous session that was disconnected
-    */
-  Resume = 6,
-   /*
-    * You should attempt to reconnect and resume immediately
-    */
-  Reconnect,
-   /*
-    * Request information about offline guild members in a large guild
-    */
-  RequestGuildMembers,
-   /*
-    * The session has been invalidated. You should reconnect and identify/resume accordingly
-    */
-  InvalidSession,
-   /*
-    * Sent immediately after connecting, contains the heartbeat_interval to use
-   */
-  Hello,
- /*
-  * Sent in response to receiving a heartbeat to acknowledge that it has been received
-  */
-  HeartbeatAck,
-}
-
-export interface Hello { 
-    t: null,
-    s: null,
-    op: GatewayOpcodes.Hello,
-    d: { heartbeat_interval: number }
-}
-export interface Heartbeat {
-    t: string | null;
-    op: GatewayOpcodes.Heartbeat;
-    d?: number | null;
-    s: number | null;
-}
-
-export interface HeartbeatAck {
-    t: null;
-    op: GatewayOpcodes.HeartbeatAck;
-    d: null;
-    s: null;
-}
-interface CoreDispatch {
-    t: string  |null; 
-    d: unknown;
-    op: GatewayOpcodes.Dispatch;
-    s: number | null;
-}
-export interface ReadyDispatch extends CoreDispatch {
-    t: "READY";
-    d: {
-        v: number;
-        user : any;
-        guilds: any[];
-        session_id: string;
-        resume_gateway_url: string;
-        shard?: [number,number];
-        application: any
-    }
-}
-type Dispatch =
-    | ReadyDispatch;
-type Payload = 
-    | Hello 
-    | Heartbeat
-    | Identify
-    | HeartbeatAck
-    | Resume
-    | Dispatch;
-
-
-export interface Identify {
-    op: GatewayOpcodes.Identify
-    t: null,
-    s: null,
-    d : {
-      "token": string;
-      "intents": number; //intents
-      "properties": {
-        "os": string;
-        "browser": string;
-        "device": string;
-       } 
-    };
-    "compress"?: boolean;
-    "large_threshold"?: number;
-    "shard"?: [number, number];
-    "presence"?: {
-        "activities": { name: string; type: number }[],
-        "status": "dnd";
-        "since"?: number;
-        "afk": false;
-    }
-}
-
-export interface Resume {
-    "t" : null,
-    "op": GatewayOpcodes.Resume,
-    "d": {
-        "token": string; 
-        "session_id": string;
-        "seq": number 
-    };
-    s: null;
-}
 //Creates a multicasted websocket connection
 //ie: multiple streams share the same source (websocket connection).
 export const handleMessages$ = (
@@ -154,6 +48,7 @@ export const handleMessages$ = (
 
 type Aorta = (payload: Payload) => unknown
 
+const HeartbeatSyncError = Error("Heartbeat out of sync: Hello event has not been recieved")
 
 const jitter = (heartbeat_interval: number): number => heartbeat_interval * Math.random();
 
@@ -195,41 +90,10 @@ function optionsToIdentify(options: Options): Identify {
     }
 }
 
-function makeResumeManager() {
-
-}
-
-function dispatchOpcodes(
-    payload: Payload,
-    gatewayReconnectSetter : BehaviorSubject<O.Option<string>>,
-    aorta: Aorta,
-) {
-    switch(payload.op){
-       case GatewayOpcodes.Dispatch: { 
-          switch(payload.t) {
-            case "READY" : {
-               gatewayReconnectSetter.next(O.some(payload.d.resume_gateway_url)) 
-            } break;
-            case null : {
-
-            } break;
-          }
-       } break;
-       case GatewayOpcodes.Resume : {
-
-       } break;
-       //https://discord.com/developers/docs/topics/gateway#heartbeat-requests
-       case GatewayOpcodes.Heartbeat: {
-        aorta({ op: GatewayOpcodes.Heartbeat, t: null, s: null })
-       }
-    }
-
-}
-
 const intoInterval = 
     O.match(
-        () => throwError(() => Error("Heartbeat out of sync: Hello event has not been recieved")),
-        (rate: number) => interval(rate) 
+        () => throwError(() => HeartbeatSyncError),
+        (rate: number) => of(rate).pipe(concatMap(() => interval(rate)))
     )
 
 
@@ -237,12 +101,20 @@ const maybeHeartBeat = O.map((payload: Hello) => payload.d.heartbeat_interval)
 
 const heartbeatOrThrow =
     O.match(
-        () => throwError(() => Error("Heartbeat out of sync: Hello event has not been recieved")),
-        (rate: number) => of(rate).pipe(concatMap(() => timeout(rate))) 
+        () => throwError(() => HeartbeatSyncError),
+        (rate: number) => of(rate).pipe(timeout(rate)) 
     )
 
 
-
+function createHeartbeat(rate: Lazy<O.Option<Hello>>, aorta: Aorta, sequenceSubject: BehaviorSubject<number|null>) {
+    
+   const interval = () => fp.pipe(rate(), maybeHeartBeat, intoInterval)
+   return defer(interval).pipe(
+     tap(() => { 
+        aorta({ op: GatewayOpcodes.Heartbeat, d: sequenceSubject.getValue(), t: null, s: null })
+     })
+   )
+}
 export const createHeart = (
     ws: WebSocket.WebSocket,
     options: Options
@@ -250,7 +122,7 @@ export const createHeart = (
      const identifyPump = new Subject<never>(); 
      const hello = new BehaviorSubject<O.Option<Hello>>(O.none);
      const sequence = new BehaviorSubject<number|null>(null);
-     const gatewayReconnectPayload = new BehaviorSubject<O.Option<ReadyDispatch>>(O.none);
+     //const gatewayReconnectPayload = new BehaviorSubject<O.Option<ReadyDispatch>>(O.none);
      const startHeart$ = fromEvent(ws, 'on');
      const onError$: Observable<WebSocket.ErrorEvent> = fromEvent(ws, 'error').pipe(
          tap(console.error)
@@ -265,12 +137,7 @@ export const createHeart = (
          makeStartPump(aorta, hello),
          tap(() => identifyPump.complete())
      );
-     const intervalHeartbeat$ = () => fp.pipe(hello.value, maybeHeartBeat, intoInterval)
-     const heartbeat$ = defer(intervalHeartbeat$).pipe(
-         tap(() => {
-             aorta({ op: GatewayOpcodes.Heartbeat, d: sequence.getValue(), t: null, s: null })
-         }),
-     );
+     const heartbeat$ = createHeartbeat(() => hello.getValue(), aorta, sequence); 
      const timeout$ = messageStream$.pipe(
          filter(payload => payload.op === GatewayOpcodes.HeartbeatAck),
          concatMap(() => 
@@ -291,13 +158,12 @@ export const createHeart = (
         bloodStream$: concat(
             identifyPump,
             messageStream$.pipe(tap((e) => {
-                    if(e.s !== null) {
-                        sequence.next(e.s);
-                    } else {
-                        console.debug('sequence number null')
-                    }
-                })
-            )
+                if(e.s !== null) {
+                    sequence.next(e.s);
+                } else {
+                    console.debug('sequence number null')
+                }
+            }))
         ),
         start: () => {
             identifyPump.subscribe({
