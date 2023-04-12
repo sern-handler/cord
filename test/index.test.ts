@@ -10,5 +10,4 @@ describe('link generator', () => {
         }
     })
 
-
 })

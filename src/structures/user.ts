@@ -37,13 +37,13 @@ export const Parseable: ParseableUser<RawUser, User> = {
     from
 }
 
- interface User {
+interface User {
   id: Id;
   username: string;
   discriminator: string;
   avatar: O.Option<string>; 
   avatarUrl: O.Option<string>; 
- }
+}
 
 export enum UserFlag {
   DiscordEmployee = 1 << 0,

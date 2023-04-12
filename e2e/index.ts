@@ -51,7 +51,7 @@ export type Struct<T extends object> = {
 load({ DISCORD_TOKEN: (e) => e })
 
 const s = await makeClient({
-    token: process.env!.DISCORD_TOKEN!,
+    token: process.env.DISCORD_TOKEN!,
     identify: {
         intents: GenericBotIntents  
     }
