@@ -4,7 +4,7 @@ import * as assert from 'node:assert'
 
 
 // https://discord.com/developers/docs/reference#snowflakes
-export class Id implements Iterable<bigint | number> {
+export class Id implements Iterable<number> {
   snowflake: bigint;
   constructor(value: Snowflake) {
     this.snowflake = BigInt(value)
@@ -30,11 +30,11 @@ export class Id implements Iterable<bigint | number> {
   }
 
   public get increment(){
-    return this.snowflake & BigInt(0xfff);
+    return Number(this.snowflake & BigInt(0xfff));
   }
 
   [Symbol.iterator]() {
-    return [this.asUnixTimestamp, this.internalWorkerId, this.internalProcessId, this.increment].values()
+    return ([this.asUnixTimestamp, this.internalWorkerId, this.internalProcessId, this.increment] as const).values()
   }
 
 }

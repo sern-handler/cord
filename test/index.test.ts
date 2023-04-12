@@ -21,11 +21,11 @@ describe('Id', () => {
         expect(id.internalWorkerId).toBe(1)
         expect(id.internalProcessId).toBe(0)
     })
-    it("should iterate through each component of id", () => {
+    it("should implementIterable", () => {
         const [timestampMs, workerId, pid, inc ] = new Id("504698587221852172")
         expect(timestampMs).toBe(1540399920040)
         expect(workerId).toBe(0)
         expect(pid).toBe(0)
-        expect(inc).toBe(BigInt(12))
+        expect(inc).toBe(12)
     })
 })
