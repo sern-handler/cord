@@ -1,6 +1,6 @@
 export const CDN_URL = 'https://cdn.discordapp.com';
 export const WS_URL = 'wss://gateway.discord.gg/'
-
+export const DISCORD_EPOCH = 1420070400000;
 /**
  * https://discord.com/developers/docs/topics/gateway#list-of-intents
  */
