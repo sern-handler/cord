@@ -1,9 +1,11 @@
 import type { RawApplicationRoleConnectionMetadata } from './application.js';
-import type { Item } from './common.js';
+import { Item, id } from './common.js';
 import type { RawIntegration } from './guild.js';
+import { Id } from './id.js';
+import type { Parseable as ParseableUser } from '../types/parseable.js';
+import * as O from 'fp-ts/Option';
 
 export interface RawUser extends Item {
-  // id: Snowflake;
   username: string;
   discriminator: string;
   avatar?: string;
@@ -19,61 +21,29 @@ export interface RawUser extends Item {
   premium_type?: PremiumType;
   public_flags?: number;
 }
-interface From<T> {
-    from(value : T): From<T> 
+
+//todo: turn into type classes
+function from(u: RawUser): User {
+    return {
+        id: id(u),
+        username: u.username,
+        discriminator: u.discriminator,
+        avatar: u.avatar ? O.some(u.avatar) : O.none,
+        avatarUrl: O.none //TODO,
+    }
 }
 
-interface Into<T> {
-    into() : T
+export const Parseable: ParseableUser<RawUser, User> = {
+    from
 }
 
-function id() {
-
-}
-
-function username() {
-
-}
-
-function discriminator() {
-
-}
-
-function avatar() {
-
-}
-
-function avatarUrl() {
-
-}
-
-
-// class User {
-//  constructor(private raw: RawUser) {}
-//  public get id(): Id {
-//    return new Id(this.raw.id);
-//  }
-//
-//  public get username(): string {
-//    return this.raw.id;
-//  }
-//
-//  public get discriminator(): string {
-//    return this.raw.discriminator;
-//  }
-//
-//  public get avatar(): Option<string> {
-//    if (this.raw.avatar) {
-//      return Some(this.raw.avatar);
-//    }
-//
-//    return None;
-//  }
-//
-//  public get avatarUrl(): Option<string> {
-//    return unimplemented();
-//  }
-//}
+ interface User {
+  id: Id;
+  username: string;
+  discriminator: string;
+  avatar: O.Option<string>; 
+  avatarUrl: O.Option<string>; 
+ }
 
 export enum UserFlag {
   DiscordEmployee = 1 << 0,
@@ -120,9 +90,8 @@ export enum PremiumType {
   Nitro,
   Basic,
 }
-
+//todo: implement Parseable
 export interface RawConnection extends Item {
-  // id: Snowflake;
   name: string;
   type: ConnectionService;
   revoked?: boolean;

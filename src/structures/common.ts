@@ -1,3 +1,5 @@
+import { Id } from "./id.js";
+
 export type Snowflake =
   `${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${
     | number
@@ -6,6 +8,9 @@ export interface Item {
   id: Snowflake;
 }
 
+export function id(item: Item): Id {
+    return new Id(item.id)
+}
 
 export enum Locales {
   Indonesian = 'id',
