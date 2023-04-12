@@ -1,31 +1,36 @@
-import type { u16, u64 } from '@rqft/rust';
-import { i64, u8 } from '@rqft/rust';
+import { DISCORD_EPOCH } from '../constants.js';
 import type { Snowflake } from './common.js';
+import * as assert from 'node:assert'
 
+
+// https://discord.com/developers/docs/reference#snowflakes
 export class Id {
-  constructor(private value: Snowflake) {}
-
-  public asI64(): i64 {
-    return i64(BigInt(this.value));
+  snowflake: bigint;
+  constructor(value: Snowflake) {
+    this.snowflake = BigInt(value)
+    assert.ok(this.snowflake >= 4194304, "Snowflake too small")
   }
 
-  public asUnixTimestamp(): u64 {
-    return this.asI64().shr(22).add(1420070400000);
+
+  public asUnixTimestamp(): number {
+    const milliseconds = this.snowflake >> 22n
+    return Number(milliseconds) + DISCORD_EPOCH;
   }
 
   public asDate(): Date {
-    return new Date(this.asUnixTimestamp().into(Number));
+    return new Date(this.asUnixTimestamp());
   }
 
-  public internalWorkerId(): u8 {
-    return this.asI64().bitand(0x3e0000).shr(17).into(u8);
+  public internalWorkerId(){
+    return Number(this.snowflake & 4063232n) >> 17;
   }
 
-  public internalProcessId(): u8 {
-    return this.asI64().bitand(0x1f000).shr(12).into(u8);
+  public internalProcessId() {
+    return Number(this.snowflake & BigInt(0x1f000)) >> 12;
   }
 
-  public increment(): u16 {
-    return this.asI64().bitand(0xfff);
+  public increment(){
+    return this.snowflake & BigInt(0xfff);
   }
+
 }
