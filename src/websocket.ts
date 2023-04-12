@@ -122,7 +122,6 @@ export const createHeart = (
      const identifyPump = new Subject<never>(); 
      const hello = new BehaviorSubject<O.Option<Hello>>(O.none);
      const sequence = new BehaviorSubject<number|null>(null);
-     //const gatewayReconnectPayload = new BehaviorSubject<O.Option<ReadyDispatch>>(O.none);
      const startHeart$ = fromEvent(ws, 'on');
      const onError$: Observable<WebSocket.ErrorEvent> = fromEvent(ws, 'error').pipe(
          tap(console.error)
