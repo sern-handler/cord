@@ -1,5 +1,4 @@
 import { concatMap, EMPTY, of, OperatorFunction } from "rxjs";
-import { WS_URL } from "../constants.js";
 import * as E from 'fp-ts/Either';
 
 export enum HttpVerb {
