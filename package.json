@@ -7,6 +7,7 @@
   "scripts": {
     "tdd": "vitest --config ./vitest.config.ts",
     "dev": "tsup --watch --config tsup.e2econfig.js",
+    "start": "node --experimental-specifier-resolution=node .",
     "build": "tsup",
     "test": "vitest run"
   },
@@ -27,7 +28,7 @@
     "@typescript-eslint/parser": "^5.54.0",
     "eslint": "^8.35.0",
     "prettier": "^2.8.4",
-    "tsup": "^6.6.3",
+    "tsup": "latest",
     "typescript": "^5.0.2",
     "vitest": "^0.28.5"
   },
