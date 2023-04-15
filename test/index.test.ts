@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest'
-import { link } from '../src/internal/tools'
-import { Id } from '../src/structures/id'
+import { describe, expect, it } from 'vitest';
+import { link } from '../src/internal/tools';
+import { Id } from '../src/structures/id';
+
 describe('link generator', () => {
     it("should make version x api base link", () => {
         const version = [7,8,9,10];
