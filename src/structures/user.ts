@@ -2,8 +2,9 @@ import type { RawApplicationRoleConnectionMetadata } from './application.js';
 import { Item, id } from './common.js';
 import type { RawIntegration } from './guild.js';
 import { Id } from './id.js';
-import type { Parseable as ParseableUser } from '../types/parseable.js';
+import type { From } from '../types/parseable.js';
 import * as O from 'fp-ts/Option';
+import * as fp from 'fp-ts/function'
 
 export interface RawUser extends Item {
   username: string;
@@ -28,21 +29,53 @@ function from(u: RawUser): User {
         id: id(u),
         username: u.username,
         discriminator: u.discriminator,
-        avatar: u.avatar ? O.some(u.avatar) : O.none,
-        avatarUrl: O.none //TODO,
+        avatar: O.fromNullable(u.avatar), 
+        banner: O.fromNullable(u.banner),
+        get avatarUrl() {
+            const base = "https://cdn.discordapp.com/avatars/"
+            return fp.pipe(
+                this.avatar,
+                O.map(avatar => `${base}/${this.id}/${avatar}.png`)
+            )
+        },
+        get bannerUrl() {
+            const base = "https://cdn.discordapp.com/banners/"
+            return fp.pipe(
+                this.avatar,
+                O.map(avatar => `${base}/${this.id}/${avatar}.png`)
+            )
+        },
+        accentColor: O.fromNullable(u.accent_color),
+        mfaEnabled: O.fromNullable(u.mfa_enabled),
+        locale: O.fromNullable(u.locale),
+        verified: O.fromNullable(u.verified),
+        email: O.fromNullable(u.email),
+        premiumType: O.fromNullable(u.premium_type),
+        publicFlags: O.fromNullable(u.public_flags)
     }
 }
 
-export const Parseable: ParseableUser<RawUser, User> = {
+export const Parseable: From<RawUser, User> = {
     from
 }
 
-interface User {
+export interface User {
   id: Id;
   username: string;
   discriminator: string;
   avatar: O.Option<string>; 
   avatarUrl: O.Option<string>; 
+  banner: O.Option<string>;
+  bannerUrl: O.Option<string>;
+  accentColor: O.Option<number>,
+  mfaEnabled: O.Option<boolean>,
+  locale: O.Option<string>,
+  verified: O.Option<boolean>,
+  email: O.Option<string>,
+  premiumType: O.Option<PremiumType>,
+  publicFlags: O.Option<number>
+
+
 }
 
 export enum UserFlag {

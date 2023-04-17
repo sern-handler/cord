@@ -1,8 +1,8 @@
 import { DISCORD_EPOCH } from '../constants.js';
 import type { Snowflake } from './common.js';
 import * as assert from 'node:assert'
-
-
+import * as O from 'fp-ts/Option'
+import * as fp from 'fp-ts/function'
 // https://discord.com/developers/docs/reference#snowflakes
 export class Id implements Iterable<number> {
   snowflake: bigint;
@@ -10,7 +10,6 @@ export class Id implements Iterable<number> {
     this.snowflake = BigInt(value)
     assert.ok(this.snowflake >= 4194304, "Snowflake too small")
   }
-
 
   public get asUnixTimestamp(): number {
     const milliseconds = this.snowflake >> 22n
@@ -37,4 +36,14 @@ export class Id implements Iterable<number> {
     return ([this.asUnixTimestamp, this.internalWorkerId, this.internalProcessId, this.increment] as const).values()
   }
 
+  toString() {
+    return this.snowflake.toString()
+  }
+
 }
+
+type MaybeSnowflakeToId = (s: Snowflake | null | undefined) => O.Option<Id>
+export const nullableSnowflakeToId: MaybeSnowflakeToId = fp.flow(
+    O.fromNullable,
+    O.map((s: Snowflake) => new Id(s))
+);
