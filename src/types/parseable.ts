@@ -1,3 +1,3 @@
-export interface Parseable<A,B> {
+export interface From<A,B> {
     from(src: A) : B
 }
