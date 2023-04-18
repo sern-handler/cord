@@ -17,4 +17,11 @@
 - [ ] API completeness
     - most libraries dont actually cover every corner of the discord api
 
-abcdefghh!!
+
+# Testing
+- Node v18.x.x 
+- pnpm
+- Ensure you have a .env file in root directory
+    - DISCORD_TOKEN=yourtokenhere
+- Build and watch with `pnpm run dev`
+- Run test bot with `pnpm start`

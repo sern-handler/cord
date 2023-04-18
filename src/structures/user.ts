@@ -1,54 +1,87 @@
-import type { Option } from '@rqft/rust';
-import { None, Some, unimplemented } from '@rqft/rust';
 import type { RawApplicationRoleConnectionMetadata } from './application.js';
-import type { Item } from './common.js';
+import { Item, id } from './common.js';
 import type { RawIntegration } from './guild.js';
 import { Id } from './id.js';
-// import { inject_path } from '../tools';
+import type { From1 } from '../types/parseable.js';
+import * as O from 'fp-ts/Option';
+import * as fp from 'fp-ts/function'
+import { APIUser } from 'discord-api-types/v10';
 
-export interface RawUser extends Item {
-  // id: Snowflake;
-  username: string;
-  discriminator: string;
-  avatar?: string;
-  bot?: boolean;
-  system?: boolean;
-  mfa_enabled?: boolean;
-  banner?: string;
-  accent_color?: number;
-  locale?: string;
-  verified?: boolean;
-  email?: string;
-  flags?: number;
-  premium_type?: PremiumType;
-  public_flags?: number;
+//export interface RawUser extends Item {
+//  username: string;
+//  discriminator: string;
+//  avatar?: string;
+//  bot?: boolean;
+//  system?: boolean;
+//  mfa_enabled?: boolean;
+//  banner?: string;
+//  accent_color?: number;
+//  locale?: string;
+//  verified?: boolean;
+//  email?: string;
+//  flags?: number;
+//  premium_type?: PremiumType;
+//  public_flags?: number;
+//}
+
+//todo: turn into type classes
+function from(u: APIUser): User {
+    console.log(u)
+    return {
+        id: id(u),
+        bot: Boolean(u.bot),
+        system: Boolean(u.system),
+        verified: Boolean(u.verified),
+        email: O.fromNullable(u.email),
+        username: u.username,
+        discriminator: u.discriminator,
+        avatar: u.avatar!, 
+        banner: O.fromNullable(u.banner),
+        accentColor: O.fromNullable(u.accent_color),
+        get avatarUrl() {
+            const base = "https://cdn.discordapp.com/avatars/"
+            return fp.pipe(
+                this.avatar,
+                avatar => `${base}/${this.id}/${avatar}.png`
+            )
+        },
+        get bannerUrl() {
+            const base = "https://cdn.discordapp.com/banners/"
+            return fp.pipe(
+                this.banner,
+                O.map(avatar => `${base}/${this.id}/${avatar}.png`)
+            )
+        },
+        //mfaEnabled: u.mfa_enabled!,
+        locale: O.fromNullable(u.locale),
+        //verified: u.verified!,
+        //premiumType: (u.premium_type!) as unknown as PremiumType,
+        publicFlags: u.public_flags!
+    }
 }
 
-export class User {
-  constructor(private raw: RawUser) {}
-  public get id(): Id {
-    return new Id(this.raw.id);
-  }
+export const Parseable: From1<APIUser, User> = {
+    from
+}
 
-  public get username(): string {
-    return this.raw.id;
-  }
-
-  public get discriminator(): string {
-    return this.raw.discriminator;
-  }
-
-  public get avatar(): Option<string> {
-    if (this.raw.avatar) {
-      return Some(this.raw.avatar);
-    }
-
-    return None;
-  }
-
-  public get avatarUrl(): Option<string> {
-    return unimplemented();
-  }
+export interface User {
+  id: Id;
+  username: string;
+  bot: boolean;
+  verified: boolean
+  system: boolean;
+  discriminator: string;
+  avatar: string; 
+  avatarUrl: string; 
+  banner: O.Option<string>;
+  bannerUrl: O.Option<string>;
+  accentColor: O.Option<number>,
+  //mfaEnabled: boolean,
+  locale: O.Option<string>,
+  //verified: boolean,
+  email: O.Option<string>,
+  //premiumType: PremiumType,
+  publicFlags: number
 }
 
 export enum UserFlag {
@@ -96,9 +129,8 @@ export enum PremiumType {
   Nitro,
   Basic,
 }
-
+//todo: implement Parseable
 export interface RawConnection extends Item {
-  // id: Snowflake;
   name: string;
   type: ConnectionService;
   revoked?: boolean;
@@ -155,3 +187,4 @@ export enum Endpoints {
   GetUserApplicationRoleConnection = 'GET /users/@me/applications/{application.id}/role-connection',
   UpdateUserApplicationRoleConnection = 'PUT /users/@me/applications/{application.id}/role-connection',
 }
+

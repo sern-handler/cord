@@ -2,11 +2,12 @@
   "name": "cord",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.js",
+  "main": "dist/index.mjs",
   "module": "dist/index.mjs",
   "scripts": {
     "tdd": "vitest --config ./vitest.config.ts",
-    "dev": "tsup --watch --onSuccess node .",
+    "dev": "tsup --watch --config tsup.e2econfig.js",
+    "start": "node --experimental-specifier-resolution=node .",
     "build": "tsup",
     "test": "vitest run"
   },
@@ -14,19 +15,22 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@rqft/rust": "^1.0.18",
+    "discord-api-types": "^0.37.39",
     "fp-ts": "^2.13.1",
-    "pnpm": "^7.27.1",
-    "rxjs": "^7.8.0"
+    "pnpm": "^7.28.0",
+    "rxjs": "^7.8.0",
+    "ws": "^8.12.1"
   },
   "devDependencies": {
-    "@types/eslint": "^8.4.7",
-    "@types/node": "^14.18.13",
-    "@typescript-eslint/eslint-plugin": "^5.26.0",
-    "@typescript-eslint/parser": "^5.26.0",
-    "eslint": "^8.34.0",
-    "prettier": "^2.5.1",
-    "tsup": "^6.6.3",
+    "@types/eslint": "^8.21.1",
+    "@types/node": "^14.18.37",
+    "@types/ws": "^8.5.4",
+    "@typescript-eslint/eslint-plugin": "^5.54.0",
+    "@typescript-eslint/parser": "^5.54.0",
+    "eslint": "^8.35.0",
+    "prettier": "^2.8.4",
+    "tsup": "latest",
+    "typescript": "^5.0.2",
     "vitest": "^0.28.5"
   },
   "type": "module"

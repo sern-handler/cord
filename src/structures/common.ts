@@ -1,9 +1,13 @@
-export type Snowflake =
-  `${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${
-    | number
-    | ''}`;
+import { Snowflake } from "discord-api-types/v10";
+import { Id } from "./id.js";
+
+
 export interface Item {
   id: Snowflake;
+}
+
+export function id(item: Item): Id {
+    return new Id(item.id)
 }
 
 export enum Locales {

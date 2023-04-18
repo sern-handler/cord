@@ -1,4 +1,5 @@
-import { WS_URL } from "./constants.js";
+import { concatMap, EMPTY, of, OperatorFunction } from "rxjs";
+import * as E from 'fp-ts/Either';
 
 export enum HttpVerb {
   Get = 'GET',
@@ -57,5 +58,21 @@ export function injectPath<T extends Path>(
 }
 
 export const link = (f: (v: string) => string ) => (v: unknown): string => f(String(v));
-export const gatewayUrl = link(version => `${WS_URL}/?v=${version}&encoding=json`);
 export const baseApiUrl = link(version => `https://discord.com/api/v${version}`);
+export function makeWSUrl(base:string, version: number, encoding: 'json') {
+    const url = new URL(base)
+    url.searchParams.set("v", String(version))
+    url.searchParams.set("encoding", encoding)
+    return url
+}
+
+///filters all Lefts and map to right value
+export function filterMap<Error, Value>(): OperatorFunction<E.Either<Error, Value>, Value> {
+    return concatMap(either => {
+           if(E.isLeft(either)) {
+               return EMPTY
+           }
+           return of(either.right)
+        }) 
+}
+
