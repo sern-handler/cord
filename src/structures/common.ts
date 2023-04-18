@@ -1,9 +1,6 @@
+import { Snowflake } from "discord-api-types/v10";
 import { Id } from "./id.js";
 
-export type Snowflake =
-  `${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${number}${
-    | number
-    | ''}`;
 
 export interface Item {
   id: Snowflake;

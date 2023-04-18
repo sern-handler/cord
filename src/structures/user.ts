@@ -2,82 +2,86 @@ import type { RawApplicationRoleConnectionMetadata } from './application.js';
 import { Item, id } from './common.js';
 import type { RawIntegration } from './guild.js';
 import { Id } from './id.js';
-import type { From } from '../types/parseable.js';
+import type { From1 } from '../types/parseable.js';
 import * as O from 'fp-ts/Option';
 import * as fp from 'fp-ts/function'
+import { APIUser } from 'discord-api-types/v10';
 
-export interface RawUser extends Item {
-  username: string;
-  discriminator: string;
-  avatar?: string;
-  bot?: boolean;
-  system?: boolean;
-  mfa_enabled?: boolean;
-  banner?: string;
-  accent_color?: number;
-  locale?: string;
-  verified?: boolean;
-  email?: string;
-  flags?: number;
-  premium_type?: PremiumType;
-  public_flags?: number;
-}
+//export interface RawUser extends Item {
+//  username: string;
+//  discriminator: string;
+//  avatar?: string;
+//  bot?: boolean;
+//  system?: boolean;
+//  mfa_enabled?: boolean;
+//  banner?: string;
+//  accent_color?: number;
+//  locale?: string;
+//  verified?: boolean;
+//  email?: string;
+//  flags?: number;
+//  premium_type?: PremiumType;
+//  public_flags?: number;
+//}
 
 //todo: turn into type classes
-function from(u: RawUser): User {
+function from(u: APIUser): User {
+    console.log(u)
     return {
         id: id(u),
-        author: O.none as O.None,
+        bot: Boolean(u.bot),
+        system: Boolean(u.system),
+        verified: Boolean(u.verified),
+        email: O.fromNullable(u.email),
         username: u.username,
         discriminator: u.discriminator,
-        avatar: O.fromNullable(u.avatar), 
+        avatar: u.avatar!, 
         banner: O.fromNullable(u.banner),
+        accentColor: O.fromNullable(u.accent_color),
         get avatarUrl() {
             const base = "https://cdn.discordapp.com/avatars/"
             return fp.pipe(
                 this.avatar,
-                O.map(avatar => `${base}/${this.id}/${avatar}.png`)
+                avatar => `${base}/${this.id}/${avatar}.png`
             )
         },
         get bannerUrl() {
             const base = "https://cdn.discordapp.com/banners/"
             return fp.pipe(
-                this.avatar,
+                this.banner,
                 O.map(avatar => `${base}/${this.id}/${avatar}.png`)
             )
         },
-        accentColor: O.fromNullable(u.accent_color),
-        mfaEnabled: O.fromNullable(u.mfa_enabled),
+        //mfaEnabled: u.mfa_enabled!,
         locale: O.fromNullable(u.locale),
-        verified: O.fromNullable(u.verified),
-        email: O.fromNullable(u.email),
-        premiumType: O.fromNullable(u.premium_type),
-        publicFlags: O.fromNullable(u.public_flags)
+        //verified: u.verified!,
+        //premiumType: (u.premium_type!) as unknown as PremiumType,
+        publicFlags: u.public_flags!
     }
 }
 
-export const Parseable: From<RawUser, User> = {
+export const Parseable: From1<APIUser, User> = {
     from
 }
 
 export interface User {
   id: Id;
   username: string;
-  author: O.None //TODO
+  bot: boolean;
+  verified: boolean
+  system: boolean;
   discriminator: string;
-  avatar: O.Option<string>; 
-  avatarUrl: O.Option<string>; 
+  avatar: string; 
+  avatarUrl: string; 
   banner: O.Option<string>;
   bannerUrl: O.Option<string>;
   accentColor: O.Option<number>,
-  mfaEnabled: O.Option<boolean>,
+  //mfaEnabled: boolean,
   locale: O.Option<string>,
-  verified: O.Option<boolean>,
+  //verified: boolean,
   email: O.Option<string>,
-  premiumType: O.Option<PremiumType>,
-  publicFlags: O.Option<number>
-
-
+  //premiumType: PremiumType,
+  publicFlags: number
 }
 
 export enum UserFlag {

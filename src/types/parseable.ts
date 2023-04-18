@@ -1,3 +1,3 @@
-export interface From<A,B> {
+export interface From1<A,B> {
     from(src: A) : B
 }

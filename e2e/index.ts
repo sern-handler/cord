@@ -1,8 +1,9 @@
 import { makeClient } from '../src/index.js'
 import { EOL } from 'node:os'
 import { existsSync, readFileSync } from 'fs';
-import { GenericBotIntents } from '../src/constants.js';
-import { take } from 'rxjs';
+import { GatewayIntentBits, GenericBotIntents } from '../src/constants.js';
+import { map, take } from 'rxjs';
+import * as Message from '../src/structures/message.js'
 function load<T extends object>(struct: Struct<T>, path: string = '.env', inject: boolean = true): T {
   const out: T = {} as never;
 
@@ -53,14 +54,17 @@ load({ DISCORD_TOKEN: (e) => e })
 const bot = await makeClient({
     token: process.env.DISCORD_TOKEN!,
     identify: {
-        intents: GenericBotIntents  
+        intents: GenericBotIntents | GatewayIntentBits.MessageContent
     }
 });
 
 bot.login()
 
 bot.on('READY').pipe(take(1)).subscribe(console.log)
-bot.on('MESSAGE_CREATE').subscribe(console.log)
+bot.on('MESSAGE_CREATE').pipe(
+        map(Message.Parseable.from)
+    )
+    .subscribe(console.log)
 
 
 

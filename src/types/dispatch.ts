@@ -1,3 +1,7 @@
+import { APIMessage, APIUser, GatewayMessageEventExtraFields } from "discord-api-types/v10";
+import { Snowflake } from "../structures/common";
+import { RawMessage } from "../structures/message";
+import * as U from '../structures/user';
 export enum GatewayOpcodes {
    /*
     * An event was dispatched
@@ -73,7 +77,7 @@ export interface ReadyDispatch extends CoreDispatch {
     t: "READY";
     d: {
         v: number;
-        user : any;
+        user : APIUser; //client user
         guilds: any[];
         session_id: string;
         resume_gateway_url: string;
@@ -81,8 +85,16 @@ export interface ReadyDispatch extends CoreDispatch {
         application: any
     }
 }
+
+
+
+export interface MessageCreateDispatch extends CoreDispatch {
+    t: "MESSAGE_CREATE",
+    d: APIMessage & GatewayMessageEventExtraFields;
+}
 export type Dispatch =
-    | ReadyDispatch;
+    | ReadyDispatch
+    | MessageCreateDispatch;
 export type Payload = 
     | Hello 
     | Heartbeat
@@ -126,3 +138,5 @@ export interface Resume {
     };
     s: null;
 }
+
+

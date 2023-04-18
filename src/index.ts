@@ -3,9 +3,9 @@ import * as TE from 'fp-ts/TaskEither';
 import { Rest } from './rest.js';
 import { createHeart } from './websocket.js'
 import { WebSocket } from 'ws'
-import { filter } from 'rxjs';
+import { filter, map } from 'rxjs';
 import { makeWSUrl } from './internal/tools.js';
-import { GatewayOpcodes } from './types/dispatch.js';
+import { Dispatch, GatewayOpcodes } from './types/dispatch.js';
 
 
 export interface GetGatewayBot {
@@ -65,9 +65,12 @@ export const makeClient = async (options : Options) => {
   const ws = new WebSocket(url, { perMessageDeflate: false });
   const heart = createHeart(ws, options);
   return {
-    on:(name: string) => {
+    on: (name: string) => {
         return heart.bloodStream$
-            .pipe(filter(m => m.op === GatewayOpcodes.Dispatch && m.t === name))
+            .pipe(
+                filter(m => m.op === GatewayOpcodes.Dispatch && m.t === name),
+                map(m => (m as Dispatch).d)
+            ) 
     },
     login: () => heart.start().subscribe(),
   };

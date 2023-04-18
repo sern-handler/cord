@@ -1,4 +1,5 @@
-import type { Snowflake } from './common.js';
+import { Snowflake } from "discord-api-types/v10";
+
 export interface RawIntegration {
   id: Snowflake;
 }
