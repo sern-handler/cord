@@ -45,5 +45,5 @@ export class Id implements Iterable<number> {
 type MaybeSnowflakeToId = (s: Snowflake | null | undefined) => O.Option<Id>
 export const nullableSnowflakeToId: MaybeSnowflakeToId = fp.flow(
     O.fromNullable,
-    O.map((s: Snowflake) => new Id(s))
+    O.map(s  => new Id(s))
 );

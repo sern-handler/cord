@@ -146,6 +146,7 @@ export const createHeart = (
                heartbeatOrThrow
          ).pipe(
             catchError((err, obs) => { 
+                console.log(err);
                 return obs
             })
          )),

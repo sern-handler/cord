@@ -3,6 +3,8 @@ import { Item, Snowflake } from "./common";
 import { Id, nullableSnowflakeToId } from "./id";
 import * as U from "./user";
 import * as O from 'fp-ts/Option'
+import * as C from './channel'
+import * as fp from 'fp-ts/function'
 
 export interface RawMessage extends Item {
     content: string;
@@ -30,7 +32,7 @@ export interface RawMessage extends Item {
     flags: number; //message flags combined as a bitfield
     //referenced_message?****	?message object	the message associated with the message_reference
     //interaction?	message interaction object	sent if the message is a response to an Interaction
-    //thread?	channel object	the thread that was started from this message, includes thread member object
+    thread?: C.RawChannel //channel object the thread that was started from this message, includes thread member object
     //components?**	array of message components	sent if the message contains components like buttons, action rows, or other interactive components
     //sticker_items?	array of message sticker item objects	sent if the message contains stickers
     //stickers?	array of sticker objects	Deprecated the stickers sent with the message
@@ -65,7 +67,7 @@ interface CoreMessage {
     flags: number; //message flags combined as a bitfield
     //referenced_message?****	?message object	the message associated with the message_reference
     //interaction?	message interaction object	sent if the message is a response to an Interaction
-    //thread?	channel object	the thread that was started from this message, includes thread member object
+    thread: O.Option<C.CoreChannel> 	//the thread that was started from this message, includes thread member object
     //components?**	array of message components	sent if the message contains components like buttons, action rows, or other interactive components
     //sticker_items?	array of message sticker item objects	sent if the message contains stickers
     //stickers?	array of sticker objects	Deprecated the stickers sent with the message
@@ -151,7 +153,8 @@ function from(raw: RawMessage) : CoreMessage {
         type: raw.type,
         applicationId: nullableSnowflakeToId(raw.application_id),
         flags: raw.flags,
-        position: raw.position
+        position: raw.position,
+        thread: fp.pipe(O.fromNullable(raw.thread), O.map(C.Parseable.from))
     }
 }
 

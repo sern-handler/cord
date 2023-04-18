@@ -27,6 +27,7 @@ export interface RawUser extends Item {
 function from(u: RawUser): User {
     return {
         id: id(u),
+        author: O.none as O.None,
         username: u.username,
         discriminator: u.discriminator,
         avatar: O.fromNullable(u.avatar), 
@@ -62,6 +63,7 @@ export const Parseable: From<RawUser, User> = {
 export interface User {
   id: Id;
   username: string;
+  author: O.None //TODO
   discriminator: string;
   avatar: O.Option<string>; 
   avatarUrl: O.Option<string>; 
