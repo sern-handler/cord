@@ -26,7 +26,6 @@ import { APIUser } from 'discord-api-types/v10';
 
 //todo: turn into type classes
 function from(u: APIUser): User {
-    console.log(u)
     return {
         id: id(u),
         bot: Boolean(u.bot),
@@ -56,7 +55,7 @@ function from(u: APIUser): User {
         locale: O.fromNullable(u.locale),
         //verified: u.verified!,
         //premiumType: (u.premium_type!) as unknown as PremiumType,
-        publicFlags: u.public_flags!
+        publicFlags: O.fromNullable(u.public_flags)
     }
 }
 
@@ -81,7 +80,7 @@ export interface User {
   //verified: boolean,
   email: O.Option<string>,
   //premiumType: PremiumType,
-  publicFlags: number
+  publicFlags: O.Option<number>
 }
 
 export enum UserFlag {

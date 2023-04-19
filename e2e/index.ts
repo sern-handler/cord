@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'fs';
 import { GatewayIntentBits, GenericBotIntents } from '../src/constants.js';
 import { map, take } from 'rxjs';
 import * as Message from '../src/structures/message.js'
+import * as Ready from '../src/structures/ready.js'
 function load<T extends object>(struct: Struct<T>, path: string = '.env', inject: boolean = true): T {
   const out: T = {} as never;
 
@@ -60,7 +61,7 @@ const bot = await makeClient({
 
 bot.login()
 
-bot.on('READY').pipe(take(1)).subscribe(console.log)
+bot.on('READY').pipe(take(1), map(Ready.Parseable.from)).subscribe(console.log)
 bot.on('MESSAGE_CREATE').pipe(
         map(Message.Parseable.from)
     )
