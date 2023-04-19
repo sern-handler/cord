@@ -9,7 +9,6 @@ specifiers:
   discord-api-types: ^0.37.39
   eslint: ^8.35.0
   fp-ts: ^2.13.1
-  pnpm: ^7.28.0
   prettier: ^2.8.4
   rxjs: ^7.8.0
   tsup: latest
@@ -18,9 +17,7 @@ specifiers:
   ws: ^8.12.1
 
 dependencies:
-  discord-api-types: 0.37.39
   fp-ts: 2.13.1
-  pnpm: 7.28.0
   rxjs: 7.8.0
   ws: 8.12.1
 
@@ -30,6 +27,7 @@ devDependencies:
   '@types/ws': 8.5.4
   '@typescript-eslint/eslint-plugin': 5.54.0_i35x2evwqdd6ptegpuvrz5ocmm
   '@typescript-eslint/parser': 5.54.0_byynos7ffx3cepxtk6gvolkky4
+  discord-api-types: 0.37.39
   eslint: 8.35.0
   prettier: 2.8.4
   tsup: 6.7.0_typescript@5.0.2
@@ -939,7 +937,7 @@ packages:
 
   /discord-api-types/0.37.39:
     resolution: {integrity: sha512-hkhQsQyzsTJITp311WXvHZh9j4RAMfIk2hPmsWeOTN50QTpg6zqmJNfel9D/8lYNvsU01wzw9281Yke8NhYyHg==}
-    dev: false
+    dev: true
 
   /doctrine/3.0.0:
     resolution: {integrity: sha512-yS+Q5i3hBf7GBkd4KG8a7eBNNWNGLTaEwwYWUijIYM7zrlYDM0BFXHjjPWlWZ1Rg7UaddZeIDmi9jF3HmqiQ2w==}
@@ -1674,12 +1672,6 @@ packages:
       mlly: 1.1.1
       pathe: 1.1.0
     dev: true
-
-  /pnpm/7.28.0:
-    resolution: {integrity: sha512-nbuY07S2519jEjaV9KLjSFmOwh0b6KIViIdc/RCJkgco8SZa2+ikQQe4N3CfNn5By5BH0dKVbZ8Ox1Mw8wItSA==}
-    engines: {node: '>=14.6'}
-    hasBin: true
-    dev: false
 
   /postcss-load-config/3.1.4:
     resolution: {integrity: sha512-6DiM4E7v4coTE4uzA8U//WhtPwyhiim3eyjEMFCnUpzbrkK9wJHgKDT2mR+HbtSrd/NubVaYTOpSpjUl8NQeRg==}

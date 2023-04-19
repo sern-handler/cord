@@ -1,5 +1,4 @@
-import { APIMessage, APIUser, GatewayMessageEventExtraFields } from "discord-api-types/v10";
-import { Snowflake } from "../structures/common";
+import { APIApplication, APIMessage, APIUnavailableGuild, APIUser, GatewayMessageEventExtraFields } from "discord-api-types/v10";
 import { RawMessage } from "../structures/message";
 import * as U from '../structures/user';
 export enum GatewayOpcodes {
@@ -78,14 +77,13 @@ export interface ReadyDispatch extends CoreDispatch {
     d: {
         v: number;
         user : APIUser; //client user
-        guilds: any[];
+        guilds: APIUnavailableGuild[];
         session_id: string;
         resume_gateway_url: string;
         shard?: [number,number];
-        application: any
+        application: APIApplication 
     }
 }
-
 
 
 export interface MessageCreateDispatch extends CoreDispatch {

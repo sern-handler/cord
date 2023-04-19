@@ -30,7 +30,7 @@ import { Options } from './index.js';
 import { filterMap } from './internal/tools.js';
 import { GatewayOpcodes, Hello, Identify, Payload } from './types/dispatch'
 import { Lazy } from 'fp-ts/function';
-
+import * as T from 'fp-ts/Task'
 
 //Creates a multicasted websocket connection
 //ie: multiple streams share the same source (websocket connection).
@@ -161,7 +161,9 @@ export const createHeart = (
                 if(e.s !== null) {
                     sequence.next(e.s);
                 } else {
-                    console.debug('sequence number null')
+                    if(e.op === GatewayOpcodes.Dispatch) {
+                        console.debug('sequence number null')
+                    }
                 }
             }))
         ),
