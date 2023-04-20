@@ -1,6 +1,6 @@
 {
   "name": "cord",
-  "packageManager": "pnpm@7.29.0",
+  "packageManager": "pnpm@8.3.1",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.mjs",
