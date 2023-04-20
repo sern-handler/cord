@@ -38,7 +38,7 @@ Following discord-api-types, I create serncord's datastructure wrapped in Option
 Each discord api data structure comes included with (names subject to change)
 - a Parseable object, API -> Serncord structure 
 - a Stringable object. Serncord structure -> string (json) 
-- Rest functions, which will be able to make rest calls relating to the discord structure
+- REST functions, which will be able to make REST calls relating to the discord structure
 - Semigroups
     - [a good introduction](https://dev.to/gcanti/getting-started-with-fp-ts-semigroup-2mf7)
 
