@@ -13,10 +13,10 @@ import {
     GuildHubType,
     Permissions 
 } from "discord-api-types/v10"
-import { Id, nullableSnowflakeToId } from "./id";
+import { Id, nullableSnowflakeToId } from "../id";
 import * as O from 'fp-ts/Option';
-import { id } from "./common";
-import { From1 } from "../types/parseable";
+import { id } from "../common";
+import { From1 } from "../../types/parseable";
 
 export interface RawIntegration {
   id: Snowflake;
