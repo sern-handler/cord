@@ -3,6 +3,7 @@ import * as assert from 'node:assert'
 import * as O from 'fp-ts/Option'
 import * as fp from 'fp-ts/function'
 import { Snowflake } from 'discord-api-types/v10';
+
 // https://discord.com/developers/docs/reference#snowflakes
 export class Id implements Iterable<number> {
   snowflake: bigint;

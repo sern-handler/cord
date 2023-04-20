@@ -1,4 +1,4 @@
-import { APIApplication, APIMessage, APIUnavailableGuild, APIUser, GatewayMessageEventExtraFields } from "discord-api-types/v10";
+import { APIApplication, APIGuild, APIMessage, APIUnavailableGuild, APIUser, GatewayGuildCreateDispatch, GatewayGuildCreateDispatchData, GatewayMessageEventExtraFields } from "discord-api-types/v10";
 import { RawMessage } from "../structures/message";
 import * as U from '../structures/user';
 export enum GatewayOpcodes {
@@ -89,6 +89,10 @@ export interface ReadyDispatch extends CoreDispatch {
 export interface MessageCreateDispatch extends CoreDispatch {
     t: "MESSAGE_CREATE",
     d: APIMessage & GatewayMessageEventExtraFields;
+}
+export interface GuildCreateDispatch extends CoreDispatch {
+    t: "GUILD_CREATE";
+    d: GatewayGuildCreateDispatchData
 }
 export type Dispatch =
     | ReadyDispatch
