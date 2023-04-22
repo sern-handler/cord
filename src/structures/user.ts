@@ -1,6 +1,6 @@
 import type { RawApplicationRoleConnectionMetadata } from './application.js';
 import { Item, id } from './common.js';
-import type { RawIntegration } from './guild.js';
+import type { RawIntegration } from './guild/guild.js';
 import { Id } from './id.js';
 import type { From1 } from '../types/parseable.js';
 import * as O from 'fp-ts/Option';

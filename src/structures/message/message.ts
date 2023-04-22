@@ -1,12 +1,12 @@
-import { From1 } from "../types/parseable";
-import { Id, nullableSnowflakeToId } from "./id";
+import { From1 } from "../../types/parseable";
+import { Id, nullableSnowflakeToId } from "../id";
 import { APIMessage, GatewayMessageEventExtraFields} from 'discord-api-types/v10'
-import * as U from "./user";
+import * as U from "../user";
 import * as O from 'fp-ts/Option'
-import * as C from './channel'
+import * as C from '../channel'
 import * as fp from 'fp-ts/function'
 
-interface CoreMessage {
+export interface CoreMessage {
     content: string;
     channelId: Id;
     author: U.User //	the author of this message (not guaranteed to be a valid user, see below)

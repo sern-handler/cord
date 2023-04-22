@@ -151,7 +151,7 @@ export interface CoreGuild {
      * See https://discord.com/developers/docs/resources/guild#guild-object-premium-tier
      */
     premiumTier: GuildPremiumTier;
-    /**
+   /**
      * The number of boosts this guild currently has
      */
     premiumSubscriptionCount: O.Option<number>;

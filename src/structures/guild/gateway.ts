@@ -1,13 +1,15 @@
-import { APIGuildScheduledEvent, GatewayPresenceUpdate, GatewayVoiceState } from "discord-api-types/v10";
+import { GatewayGuildCreateDispatchData, GatewayPresenceUpdate, GatewayVoiceState } from "discord-api-types/v10";
 import * as C from '../channel'
-
-interface CoreGuildCreate {
+import * as  O from 'fp-ts/Option'
+import * as G from './guild'
+import { From1 } from "../../types/parseable";
+interface CoreGuildCreate extends G.CoreGuild {
     /**
      * When this guild was joined at
      *
      * **This field is only sent within the [GUILD_CREATE](https://discord.com/developers/docs/topics/gateway-events#guild-create) event**
      */
-    joined_at: string;
+    joinedAt: string;
     /**
      * `true` if this is considered a large guild
      *
@@ -17,7 +19,7 @@ interface CoreGuildCreate {
     /**
      * `true` if this guild is unavailable due to an outage
      */
-    unavailable?: boolean;
+    unavailable: O.Option<boolean>;
     /**
      * Total number of members in this guild
      *
@@ -83,3 +85,21 @@ interface CoreGuildCreate {
 
 }
 
+function from(r: GatewayGuildCreateDispatchData) : CoreGuildCreate {
+    const coreGuild = G.Parseable.from(r)
+    return {
+        joinedAt: r.joined_at,
+        large: r.large,
+        unavailable: O.fromNullable(r.unavailable),
+        memberCount: r.member_count,
+        voiceStates: [], //TODO,
+        channels: r.threads.map(C.Parseable.from), 
+        threads: r.threads.map(C.Parseable.from),
+        presences: [],
+        ...coreGuild 
+    } 
+}
+
+export const Parseable : From1<GatewayGuildCreateDispatchData, CoreGuildCreate> = {
+    from
+}
