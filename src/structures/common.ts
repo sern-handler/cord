@@ -43,7 +43,7 @@ export enum Locales {
   ChineseChina = 'zh-CN',
   ChineseTaiwan = 'zh-TW',
 }
-
+export type LocaleString = `${Locales}`
 export enum TokenType {
   User = 'Bearer',
   Bot = 'Bot',

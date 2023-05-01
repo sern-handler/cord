@@ -1,6 +1,7 @@
 import { concatMap, EMPTY, of, OperatorFunction } from "rxjs";
 import * as E from 'fp-ts/Either';
-
+import * as O from 'fp-ts/Option'
+import { Id } from "../structures/id";
 export enum HttpVerb {
   Get = 'GET',
   Post = 'POST',
@@ -75,4 +76,6 @@ export function filterMap<Error, Value>(): OperatorFunction<E.Either<Error, Valu
            return of(either.right)
         }) 
 }
+
+
 
