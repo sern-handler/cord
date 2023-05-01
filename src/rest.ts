@@ -4,7 +4,7 @@ import { HttpVerb, injectPath } from './internal/tools.js';
 import * as TE from 'fp-ts/TaskEither'
 import * as J from 'fp-ts/Json'
 import * as E from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function';
+import * as fp from 'fp-ts/function';
 import { baseApiUrl } from './internal/tools.js';
 export interface RestOptions {
   tokenType?: TokenType;
@@ -45,7 +45,7 @@ export class Rest {
         }
         return E.right(o)
     }
-    const body = pipe(
+    const body = fp.pipe(
         options.body,
         safeJson
     );
@@ -55,7 +55,7 @@ export class Rest {
     }
 
     const [method, e] = endpoint.split(' ') as [HttpVerb, T];
-    const makeHeaders = (maybeHeaders: Record<string,string> | undefined) => pipe(
+    const makeHeaders = (maybeHeaders: Record<string,string> | undefined) => fp.pipe(
             maybeHeaders ?? {},
             header => ({
                 ...header,
