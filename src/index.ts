@@ -1,6 +1,6 @@
 import * as fp from 'fp-ts/function';
 import * as TE from 'fp-ts/TaskEither';
-import { Rest } from './rest.js';
+import { Configuration, DefaultApi, GatewayBotResponse } from '../openapi';
 import { createHeart } from './websocket.js'
 import { WebSocket } from 'ws'
 import { filter, map } from 'rxjs';
@@ -34,9 +34,11 @@ export interface Options {
 
 
 export const makeClient = async (options : Options) => {
-  const rest = new Rest({
-    token: options.token
-  });
+  const rest = new DefaultApi( new Configuration({ 
+     headers: {
+        'Authorization': 'Bot '+options.token
+     }
+  }));
 
   //const gatewayBotUrl = new BehaviorSubject<O.Option<string>>(O.none);
   //const gatewayBotPayload = new BehaviorSubject<O.Option<GetGatewayBot>>(O.none);
@@ -50,19 +52,9 @@ export const makeClient = async (options : Options) => {
   //  return TE.right(payload)
   // }
 
-  /*
-   * @NeedsRefactor
-   * Caches the url received from gateway/bot and also its payload.
-   * Also caches the Gateway Bot Payload and then returns the full url
-   * for a websocket's first 
-   * */
-  const url = await fp.pipe(
-      rest.request("GET /gateway/bot") as TE.TaskEither<Error, GetGatewayBot>,
-      TE.map(p => makeWSUrl(p.url, 10, 'json')),
-      TE.getOrElse((e) => { throw e }),
-    )();
+  const response = await rest.getBotGateway()
 
-  const ws = new WebSocket(url, { perMessageDeflate: false });
+  const ws = new WebSocket(makeWSUrl(response.url, 10, 'json'), { perMessageDeflate: false });
   const heart = createHeart(ws, options);
   return {
     on: (name: string) => {

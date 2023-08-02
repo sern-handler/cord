@@ -1,6 +1,4 @@
-import { APIApplication, APIGuild, APIMessage, APIUnavailableGuild, APIUser, GatewayGuildCreateDispatch, GatewayGuildCreateDispatchData, GatewayMessageEventExtraFields } from "discord-api-types/v10";
-import { RawMessage } from "../structures/message";
-import * as U from '../structures/user';
+import { APIApplication, APIMessage, APIUnavailableGuild, APIUser,  GatewayGuildCreateDispatchData, GatewayMessageEventExtraFields } from "discord-api-types/v10";
 export enum GatewayOpcodes {
    /*
     * An event was dispatched

@@ -67,6 +67,15 @@ export function makeWSUrl(base:string, version: number, encoding: 'json') {
     return url
 }
 
+export type Cm<T extends string> = T extends `${infer F}_${infer S}${infer R}` ? `${F}${Uppercase<S>}${Cm<R>}` : T;
+
+export type Nullish = null | undefined;
+export type IsNullish<T> = undefined extends T ? true : null extends T ? true : false;
+export type Convert<T> = {
+  [P in keyof T as P extends string ? Cm<P> : never]-?:
+      IsNullish<T[P]> extends true ? O.Option<Convert<NonNullable<T[P]>>> : T[P] extends `${number}` ? Id : T[P] 
+}
+
 ///filters all Lefts and map to right value
 export function filterMap<Error, Value>(): OperatorFunction<E.Either<Error, Value>, Value> {
     return concatMap(either => {

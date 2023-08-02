@@ -1,6 +1,6 @@
 {
   "name": "cord",
-  "packageManager": "pnpm@7.29.0",
+  "packageManager": "yarn@3.5.0",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.mjs",
@@ -10,7 +10,8 @@
     "dev": "tsup --watch --config tsup.e2econfig.js",
     "start": "node --experimental-specifier-resolution=node .",
     "build": "tsup",
-    "test": "vitest run"
+    "generate-spec": "openapi-generator-cli generate -i discord-api-spec/specs/openapi.json -g typescript-fetch -o openapi --skip-validate-spec --additional-properties=supportsES6=true,",
+    "test": "vitest run" 
   },
   "keywords": [],
   "author": "",
@@ -21,6 +22,7 @@
     "ws": "^8.12.1"
   },
   "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.7.0",
     "@types/eslint": "^8.21.1",
     "@types/node": "^18.0.0",
     "@types/ws": "^8.5.4",

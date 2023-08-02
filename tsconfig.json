@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "rootDir": "src",
     "module": "esnext",
     "outDir": "dist",
     "target": "esnext",
@@ -16,5 +15,5 @@
     "forceConsistentCasingInFileNames": true
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["src", ".eslintrc.cjs"]
+  "include": ["src", "openapi/**/*"]
 }

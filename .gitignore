@@ -110,6 +110,7 @@ dist
 
 # yarn v2
 .yarn/cache
+.yarn/releases/*.cjs
 .yarn/unplugged
 .yarn/build-state.yml
 .yarn/install-state.gz
