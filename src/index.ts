@@ -3,7 +3,7 @@ import { WebSocket } from 'ws'
 import { filter, map } from 'rxjs';
 import { makeWSUrl } from './internal/tools.js';
 import { Dispatch, GatewayOpcodes } from './types/dispatch.js';
-import { Fetcher } from 'openapi-typescript-fetch'
+import Client from 'openapi-typescript-fetch'
 import type { paths } from './schema.d.ts'
 
 export interface GetGatewayBot {
@@ -30,37 +30,29 @@ export interface Options {
 }
 
 
-const fetcher = Fetcher.for<paths>()
 
 
 export const makeClient = async (options : Options) => {
-    fetcher.configure({
-      baseUrl: 'https://discord.com/api/v10/',
-      init: {
-        headers: {
-        },
-      },
-      use: []// middlewares
-    })
-//  const rest = new DefaultApi( new Configuration({ 
-//     headers: {
-//        'Authorization': 'Bot '+options.token
-//     }
-//  }));
 
-  //const gatewayBotUrl = new BehaviorSubject<O.Option<string>>(O.none);
-  //const gatewayBotPayload = new BehaviorSubject<O.Option<GetGatewayBot>>(O.none);
-  // const cacheUrl = (payload:GetGatewayBot):TE.TaskEither<Error, GetGatewayBot> => {
-  // gatewayBotUrl.next(O.some(payload.url));
-  //  return TE.right(payload);
-  // }
+   const fetcher = Client.Fetcher.for<paths>()
 
-  // const cacheGatewayPayload = (payload: GetGatewayBot) : TE.TaskEither<Error, GetGatewayBot> => {
-  //  gatewayBotPayload.next(O.some(payload));
-  //  return TE.right(payload)
-  // }
-  //@ts-ignore
-  const response = await rest.getBotGateway()
+   fetcher.configure({
+     baseUrl: 'https://discord.com/api/v10/',
+     init: {
+       headers: {
+           'Authorization': 'Bot '+options.token
+       }
+     }
+  })
+
+  const getGatewayBot = fetcher
+       .path('/gateway/bot')
+       .method('get')
+       .create()
+
+
+  const response = await getGatewayBot({})
+
 
   const ws = new WebSocket(makeWSUrl(response.url, 10, 'json'), { perMessageDeflate: false });
   const heart = createHeart(ws, options);

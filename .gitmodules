@@ -1,3 +1,6 @@
 [submodule "discord-api-spec"]
 	path = discord-api-spec
 	url = https://github.com/discord/discord-api-spec
+[submodule "openapi-typescript-fetch"]
+	path = openapi-typescript-fetch
+	url = https://github.com/sern-handler/openapi-typescript-fetch
