@@ -15,5 +15,5 @@
     "forceConsistentCasingInFileNames": true
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["src", "openapi/**/*"]
+  "include": ["src"]
 }

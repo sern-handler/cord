@@ -1,6 +1,6 @@
 import type { APIMessage, GatewayMessageCreateDispatch } from "discord-api-types/v10";
 import type { CoreMessage } from "../structures/message/message";
-import * as Id from "../structures/id";
+import * as Id from "../../structures/id";
 //import * as U from "../user";
 import * as O from 'fp-ts/Option'
 //import * as C from '../channel'

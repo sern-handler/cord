@@ -3,7 +3,7 @@ import { EOL } from 'node:os'
 import { existsSync, readFileSync } from 'fs';
 import { GatewayIntentBits, GenericBotIntents } from '../src/constants.js';
 import { map, take } from 'rxjs';
-import * as MessageCreate from '../src/structures/message/gateway.js'
+import * as MessageCreate from '../src/structures/message/gateway/MESSAGE_CREATE.js'
 import * as Ready from '../src/structures/ready.js'
 function load<T extends object>(struct: Struct<T>, path: string = '.env', inject: boolean = true): T {
   const out: T = {} as never;
