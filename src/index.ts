@@ -3,7 +3,7 @@ import { WebSocket } from 'ws'
 import { filter, map } from 'rxjs';
 import { makeWSUrl } from './internal/tools.js';
 import { Dispatch, GatewayOpcodes } from './types/dispatch.js';
-import Client from 'openapi-typescript-fetch'
+import { Fetcher } from 'openapi-typescript-fetch'
 import type { paths } from './schema.d.ts'
 
 export interface GetGatewayBot {
@@ -34,8 +34,7 @@ export interface Options {
 
 export const makeClient = async (options : Options) => {
 
-   const fetcher = Client.Fetcher.for<paths>()
-
+   const fetcher = Fetcher.for<paths>()
    fetcher.configure({
      baseUrl: 'https://discord.com/api/v10/',
      init: {

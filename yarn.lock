@@ -963,7 +963,7 @@ __metadata:
     discord-api-types: ^0.37.39
     eslint: ^8.35.0
     fp-ts: ^2.13.1
-    openapi-typescript-fetch: ^1.1.3
+    openapi-typescript-fetch: "file:./openapi-typescript-fetch"
     prettier: ^2.8.4
     rxjs: ^7.8.0
     tsup: latest
@@ -2231,10 +2231,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openapi-typescript-fetch@npm:^1.1.3":
+"openapi-typescript-fetch@file:./openapi-typescript-fetch::locator=cord%40workspace%3A.":
   version: 1.1.3
-  resolution: "openapi-typescript-fetch@npm:1.1.3"
-  checksum: df3171b0b1e8a99f2bdfb794b4dc348a1f4e5db184fabc7578a810236a5deb7bc7885240ecb2463c03d94707434784c48bd8256ea715b381f5ff91fb9218c7b6
+  resolution: "openapi-typescript-fetch@file:./openapi-typescript-fetch#./openapi-typescript-fetch::hash=c9e187&locator=cord%40workspace%3A."
+  checksum: 6123e3878e47bd6da8050e97ea0e22102998121e87f2dba5951b04e19a5f6520f8122b887c88768058212ded902f13b279cabee3dc1a6978cc6419afff1416d5
   languageName: node
   linkType: hard
 

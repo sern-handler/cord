@@ -51,7 +51,7 @@ export type Struct<T extends object> = {
   [P in keyof T]: (str: string) => T[P];
 }
 load({ DISCORD_TOKEN: (e) => e })
-
+console.log('s')
 const bot = await makeClient({
     token: process.env.DISCORD_TOKEN!,
     identify: {
