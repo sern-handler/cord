@@ -1,6 +1,6 @@
 {
   "name": "cord",
-  "packageManager": "yarn@3.5.0",
+  "packageManager": "yarn@4.1.1",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.mjs",
